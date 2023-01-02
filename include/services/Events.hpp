@@ -6,12 +6,14 @@
 
 #define EVENTS_PREFS_NAMESPACE "NOTIFICATIONS"
 
-namespace EventService {
-extern BLEService *pService;
+namespace EventService
+{
+  extern BLEService *pService;
 
-class Callbacks : public BLECharacteristicCallbacks {
-  void onWrite(BLECharacteristic *pCharacteristic);
-};
+  class Callbacks : public BLECharacteristicCallbacks
+  {
+    void onWrite(BLECharacteristic *pCharacteristic);
+  };
 
-void createService(BLEServer *pServer);
+  void createService(BLEServer *pServer);
 } // namespace EventService

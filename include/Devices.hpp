@@ -24,14 +24,14 @@
 #define GY8511_TASK_STACK_DEPTH 2000
 #define GY8511_SAMPLE_SIZE 5000
 
-#define HAPTIC_OUTPUT_PIN LED_BUILTIN  // NON-FINAL - Planned Pin 25
-#define HAPTIC_INPUT_PIN 15            // NON-FINAL - Planned Pin 32
+#define HAPTIC_OUTPUT_PIN LED_BUILTIN // NON-FINAL - Planned Pin 25
+#define HAPTIC_INPUT_PIN 15           // NON-FINAL - Planned Pin 32
 #define HAPTIC_CAPACITANCE_THRESHOLD 20
 #define HAPTIC_MIN_INTERVAL 150
 #define HAPTIC_INPUT_MAX_INTERVAL 1000
 #define HAPTIC_TIMER_STACK_DEPTH 1500
 
-#define BATTERY_INPUT_PIN 13  // NON-FINAL - Planned Pin 35
+#define BATTERY_INPUT_PIN 13 // NON-FINAL - Planned Pin 35
 #define BATTERY_SAMPLE_SIZE 10
 #define BATTERY_FULL_VOLTAGE 4.2
 #define BATTERY_EMPTY_VOLTAGE 3.0
@@ -42,7 +42,7 @@ namespace MPU6050
     extern bool connectionState;
 
     void initialise();
-}  // namespace MPU6050
+} // namespace MPU6050
 
 namespace BME280
 {
@@ -52,7 +52,7 @@ namespace BME280
     extern long sampleInterval;
 
     void initialise();
-}  // namespace BME280
+} // namespace BME280
 
 namespace MAX30105
 {
@@ -80,7 +80,7 @@ namespace MAX30105
     void resume();
 
     uint8_t getHeartRate();
-}  // namespace MAX30105
+} // namespace MAX30105
 
 namespace GY8511
 {
@@ -96,14 +96,14 @@ namespace GY8511
     void serviceTask(void *);
 
     float getIntensity();
-}  // namespace GY8511
+} // namespace GY8511
 
 namespace GY721
 {
     extern QMC5883LCompass device;
 
     void initialise();
-}  // namespace GY721
+} // namespace GY721
 
 namespace Haptics
 {
@@ -117,7 +117,7 @@ namespace Haptics
 
     // Lock must be aquired before use
     void pulse(uint8_t intensity, long duration);
-}  // namespace Haptics
+} // namespace Haptics
 
 namespace Battery
 {
@@ -126,4 +126,4 @@ namespace Battery
     float getVoltage();
 
     float getPercent();
-}  // namespace Battery
+} // namespace Battery

@@ -23,5 +23,5 @@ namespace HeartRateService
 
     void createService(BLEServer *pServer, BLEAdvertising *pAdvertising);
 
-    void serviceTask(void*);
+    void serviceTask(void *);
 }

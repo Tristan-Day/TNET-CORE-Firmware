@@ -30,24 +30,25 @@ namespace PowerManagementService
 
     class Callbacks : public BLECharacteristicCallbacks
     {
-        void onWrite(BLECharacteristic* pCharacteristic);
+        void onWrite(BLECharacteristic *pCharacteristic);
     };
 
     void createService(BLEServer *pServer);
 
-    void serviceTask(void*);
+    void serviceTask(void *);
 
     void setPowerProfile(uint8_t profile);
 }
 
 namespace PowerProfiles
 {
-    typedef enum {
-		ACTIVE,
-		OPTIMISED,
-		POWER_SAVING,
-		ULTA_POWER_SAVING
-	}PowerProfile;
+    typedef enum
+    {
+        ACTIVE,
+        OPTIMISED,
+        POWER_SAVING,
+        ULTA_POWER_SAVING
+    } PowerProfile;
 
     void active();
 

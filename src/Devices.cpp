@@ -8,7 +8,7 @@ namespace MPU6050
     bool connectionState;
 
     std::mutex mutex;
-}  // namespace MPU6050
+} // namespace MPU6050
 
 void MPU6050::initialise()
 {
@@ -21,7 +21,7 @@ namespace BME280
     bool connectionState;
 
     long sampleInterval = DEFAULT_SAMPLE_INTERVAL;
-}  // namespace BME280
+} // namespace BME280
 
 void BME280::initialise()
 {
@@ -52,7 +52,7 @@ namespace MAX30105
     uint32_t lastPulse = 0;
 
     bool contactDetected = false;
-}  // namespace MAX30105
+} // namespace MAX30105
 
 void MAX30105::initialise()
 {
@@ -135,7 +135,7 @@ namespace GY8511
 
     uint16_t buffer[GY8511_BUFFER_SIZE][2];
     uint8_t bufferCounter = 0;
-}  // namespace GY8511
+} // namespace GY8511
 
 void GY8511::initialise()
 {
@@ -204,7 +204,7 @@ namespace Haptics
     uint8_t interruptCounter = 0;
     bool timerActive = false;
     long deltaTime = 0;
-}  // namespace Haptics
+} // namespace Haptics
 
 void Haptics::initialise()
 {
@@ -216,13 +216,12 @@ void Haptics::initialise()
     touchAttachInterrupt(HAPTIC_INPUT_PIN, _touchInterrupt,
                          HAPTIC_CAPACITANCE_THRESHOLD);
     touchSetCycles(0x2000, 0x1000);
-
 }
 
 void Haptics::_touchProcessorTask(void *)
 {
     // Aquire the semmaphore
-    // 
+    //
 }
 
 void Haptics::_touchInterrupt()
@@ -232,7 +231,6 @@ void Haptics::_touchInterrupt()
 #endif
 
     // Release the semmaphore
-
 }
 
 // NON-FINAL
@@ -262,7 +260,7 @@ float Battery::getVoltage()
     }
     voltage /= BATTERY_SAMPLE_SIZE;
 
-    return (voltage * 2) / 1000;  // Multiply by 2 and Convert from Mv to V
+    return (voltage * 2) / 1000; // Multiply by 2 and Convert from Mv to V
 }
 
 float Battery::getPercent()

@@ -23,5 +23,5 @@ namespace EnvironmentalSensing
 
     void createService(BLEServer *pServer);
 
-    void serviceTask(void*);
+    void serviceTask(void *);
 }

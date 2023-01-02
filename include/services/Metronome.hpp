@@ -12,27 +12,29 @@
 #define METRONOME_SERVICE_UUID "429b5aa8-d015-4705-99db-a51c49fc84b6"
 #define METRONOME_TEMPO_UUID "726eb1ec-e713-400a-a7d3-b38a94d7095c"
 
-namespace Metronome {
-extern Preferences preferences;
+namespace Metronome
+{
+  extern Preferences preferences;
 
-extern BLEService *pService;
+  extern BLEService *pService;
 
-extern TaskHandle_t taskHandle;
-extern SemaphoreHandle_t semaphoreHandle;
+  extern TaskHandle_t taskHandle;
+  extern SemaphoreHandle_t semaphoreHandle;
 
-extern BLECharacteristic stateCharacteristic;
-extern BLEDescriptor stateDescriptor;
+  extern BLECharacteristic stateCharacteristic;
+  extern BLEDescriptor stateDescriptor;
 
-extern BLECharacteristic tempoCharacteristic;
-extern BLEDescriptor tempoDescriptor;
+  extern BLECharacteristic tempoCharacteristic;
+  extern BLEDescriptor tempoDescriptor;
 
-extern long beatInterval;
+  extern long beatInterval;
 
-class Callbacks : public BLECharacteristicCallbacks {
-  void onWrite(BLECharacteristic *pCharacteristic);
-};
+  class Callbacks : public BLECharacteristicCallbacks
+  {
+    void onWrite(BLECharacteristic *pCharacteristic);
+  };
 
-void createService(BLEServer *pServer);
+  void createService(BLEServer *pServer);
 
-void serviceTask(void *);
+  void serviceTask(void *);
 } // namespace Metronome
