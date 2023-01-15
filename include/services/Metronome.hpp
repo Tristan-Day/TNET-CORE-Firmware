@@ -1,40 +1,52 @@
-#include <Arduino.h>
+#pragma once
+
 #include <BLEUtils.h>
 #include <Preferences.h>
-#include <freertos/semphr.h>
 
-#include <Devices.hpp>
-
-#define METRONOME_PREFS_NAMESPACE "METRONOME"
-#define METRONOME_TASK_STACK_DEPTH 2000
-#define METRONOME_BEAT_DURATION 200
+#include <SystemTask.hpp>
+#include <hardware/Haptics.hpp>
 
 #define METRONOME_SERVICE_UUID "429b5aa8-d015-4705-99db-a51c49fc84b6"
 #define METRONOME_TEMPO_UUID "726eb1ec-e713-400a-a7d3-b38a94d7095c"
 
-namespace Metronome
+class Metronome : public SystemTask, BLECharacteristicCallbacks
 {
-  extern Preferences preferences;
+private:
+    static const uint16_t TASK_STACK_DEPTH = 2000;
+    static const uint16_t BEAT_DURATION = 200;
 
-  extern BLEService *pService;
+    static Metronome *pInstance;
 
-  extern TaskHandle_t taskHandle;
-  extern SemaphoreHandle_t semaphoreHandle;
+    Preferences preferences;
+    BLEService *pService;
 
-  extern BLECharacteristic stateCharacteristic;
-  extern BLEDescriptor stateDescriptor;
+    BLECharacteristic stateCharacteristic;
+    BLEDescriptor stateDescriptor;
 
-  extern BLECharacteristic tempoCharacteristic;
-  extern BLEDescriptor tempoDescriptor;
+    BLECharacteristic tempoCharacteristic;
+    BLEDescriptor tempoDescriptor;
 
-  extern long beatInterval;
+    unsigned long beatInterval;
 
-  class Callbacks : public BLECharacteristicCallbacks
-  {
+    Metronome()
+        : stateCharacteristic(BLEUUID((uint16_t)0x2AE2),
+            BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE),
+          stateDescriptor(BLEUUID((uint16_t)0x2901)),
+
+          tempoCharacteristic(METRONOME_TEMPO_UUID,
+              BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE),
+          tempoDescriptor(BLEUUID((uint16_t)0x2901)) {};
+
     void onWrite(BLECharacteristic *pCharacteristic);
-  };
 
-  void createService(BLEServer *pServer);
+    static void task(void *);
 
-  void serviceTask(void *);
-} // namespace Metronome
+public:
+    Metronome(const Metronome &obj) = delete;
+
+    static Metronome *get();
+
+    void init(BLEServer *pServer);
+
+    void setTempo(uint8_t tempo);
+};

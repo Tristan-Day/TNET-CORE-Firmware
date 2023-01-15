@@ -1,30 +1,8 @@
 #include <services/Metronome.hpp>
 
-namespace Metronome
-{
-    Preferences preferences;
+Metronome *Metronome::pInstance;
 
-    BLEService *pService;
-
-    TaskHandle_t taskHandle;
-    SemaphoreHandle_t semaphoreHandle = NULL;
-
-    BLECharacteristic stateCharacteristic(
-        BLEUUID((uint16_t)0x2AE2),
-        BLECharacteristic::PROPERTY_READ |
-        BLECharacteristic::PROPERTY_WRITE);
-    BLEDescriptor stateDescriptor(BLEUUID((uint16_t)0x2901));
-
-    BLECharacteristic tempoCharacteristic(
-        METRONOME_TEMPO_UUID,
-        BLECharacteristic::PROPERTY_READ |
-        BLECharacteristic::PROPERTY_WRITE);
-    BLEDescriptor tempoDescriptor(BLEUUID((uint16_t)0x2901));
-
-    long beatInterval;
-}
-
-void Metronome::Callbacks::onWrite(BLECharacteristic *pCharacteristic)
+void Metronome::onWrite(BLECharacteristic *pCharacteristic)
 {
     std::string characteristicUUID = pCharacteristic->getUUID().toString();
 
@@ -37,60 +15,71 @@ void Metronome::Callbacks::onWrite(BLECharacteristic *pCharacteristic)
     {
         if ((bool)*pCharacteristic->getData())
         {
-            Haptics::mutex.lock();
-            xSemaphoreGive(semaphoreHandle);
+            Haptics::aquireLock();
+            resume();
         }
         else
         {
-            Haptics::mutex.unlock();
-            xSemaphoreTake(semaphoreHandle, portMAX_DELAY);
+            Haptics::releaseLock();
+            suspend();
         }
     }
     else if (characteristicUUID == METRONOME_TEMPO_UUID)
     {
-        beatInterval = (60000 / *pCharacteristic->getData()) - METRONOME_BEAT_DURATION;
+        setTempo(*pCharacteristic->getData());
         preferences.putUChar("TEMPO", *pCharacteristic->getData());
     }
 }
 
-void Metronome::createService(BLEServer *pServer)
+void Metronome::task(void *)
 {
-    preferences.begin(METRONOME_PREFS_NAMESPACE);
+    Metronome *self = get();
+
+    while (true)
+    {
+        xSemaphoreTake(self->taskSemaphore, portMAX_DELAY);
+        Haptics::vibrate(BEAT_DURATION);
+        xSemaphoreGive(self->taskSemaphore);
+        delay(self->beatInterval);
+    }
+}
+
+Metronome *Metronome::get()
+{
+    if (pInstance == NULL)
+    {
+        pInstance = new Metronome();
+    }
+    return pInstance;
+}
+
+void Metronome::init(BLEServer *pServer)
+{
+    preferences.begin("METRONOME");
     pService = pServer->createService(METRONOME_SERVICE_UUID);
-    semaphoreHandle = xSemaphoreCreateBinary();
+    taskSemaphore = xSemaphoreCreateBinary();
 
     pService->addCharacteristic(&stateCharacteristic);
     stateDescriptor.setValue("Metronome State");
     stateCharacteristic.addDescriptor(&stateDescriptor);
-    stateCharacteristic.setCallbacks(new Metronome::Callbacks);
+    stateCharacteristic.setCallbacks(this);
 
     pService->addCharacteristic(&tempoCharacteristic);
     tempoDescriptor.setValue("Metronome Tempo");
     tempoCharacteristic.addDescriptor(&tempoDescriptor);
-    tempoCharacteristic.setCallbacks(new Metronome::Callbacks);
+    tempoCharacteristic.setCallbacks(this);
 
     pService->start();
 
-    // Load Previous Setting
     uint8_t tempo = preferences.getUChar("TEMPO", 1);
-    tempoCharacteristic.setValue((uint8_t*)&tempo, 1);
-    beatInterval = (60000 / tempo) - METRONOME_BEAT_DURATION;
+    setTempo(tempo);
 
-    xTaskCreate(serviceTask,
-                "Metronome Service",
-                METRONOME_TASK_STACK_DEPTH,
-                NULL,
-                tskIDLE_PRIORITY,
-                &taskHandle);
+    xTaskCreate(task, "Metronome Service", TASK_STACK_DEPTH, NULL,
+        tskIDLE_PRIORITY, &taskHandle);
 }
 
-void Metronome::serviceTask(void*)
+void Metronome::setTempo(uint8_t tempo)
 {
-    while (true)
-    {
-        xSemaphoreTake(semaphoreHandle, portMAX_DELAY);
-        Haptics::pulse(255, METRONOME_BEAT_DURATION);
-        xSemaphoreGive(semaphoreHandle);
-        delay(beatInterval);
-    }
+    beatInterval = (60000 / tempo) - BEAT_DURATION;
+    tempoCharacteristic.setValue((uint8_t *)&tempo, 1);
 }

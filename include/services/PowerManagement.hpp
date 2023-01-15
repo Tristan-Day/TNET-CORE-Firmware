@@ -1,60 +1,73 @@
-#include <Arduino.h>
-#include <BLEUtils.h>
+#pragma once
+
+#include <BLE2902.h>
 #include <Preferences.h>
 
-#include <Devices.hpp>
+#include <hardware/Bluetooth.hpp>
+#include <hardware/Battery.hpp>
 
-#include <services/HeartRate.hpp>
+#include <hardware/sensor/MAX30105.hpp>
+#include <hardware/sensor/BME280.hpp>
+#include <hardware/sensor/GY8511.hpp>
 
-#define POWER_MANAGEMENT_PREFS_NAMESPACE "PWR_MANGMNT"
-#define POWER_MANAGEMENT_TASK_STACK_DEPTH 2000
-#define POWER_MANAGEMENT_SAMPLE_INTERVAL 10000
+#include <SystemTask.hpp>
 
-#define POWER_MANAGEMENT_MODE_UUID "b9c1209b-4c6b-4226-ad92-18b1f1bea61f"
+#define POWER_PROFILE_UUID "b9c1209b-4c6b-4226-ad92-18b1f1bea61f"
 
-namespace PowerManagementService
+namespace PowerProfile
 {
-    extern Preferences preferences;
+    static void active();
 
-    extern BLEService *pService;
-    extern TaskHandle_t taskHandle;
+    static void optimised();
 
-    extern BLECharacteristic batteryVoltageCharacteristic;
-    extern BLEDescriptor batteryVoltageDescriptor;
+    static void powerSaving();
 
-    extern BLECharacteristic batteryCharageCharacteristic;
-    extern BLEDescriptor batteryCharageDescriptor;
+    static void ultaPowerSaving();
 
-    extern BLECharacteristic powerProfileCharacteristic;
-    extern BLEDescriptor powerProfileDescriptor;
-
-    class Callbacks : public BLECharacteristicCallbacks
-    {
-        void onWrite(BLECharacteristic *pCharacteristic);
-    };
-
-    void createService(BLEServer *pServer);
-
-    void serviceTask(void *);
-
-    void setPowerProfile(uint8_t profile);
-}
-
-namespace PowerProfiles
-{
-    typedef enum
+    enum
     {
         ACTIVE,
         OPTIMISED,
         POWER_SAVING,
-        ULTA_POWER_SAVING
-    } PowerProfile;
+        ULTRA_POWER_SAVING
+    };
+};
 
-    void active();
+class PowerManagement : public SystemTask, BLECharacteristicCallbacks
+{
+private:
+    static const uint16_t TASK_STACK_DEPTH = 2000;
 
-    void optimised();
+    static PowerManagement *pInstance;
 
-    void powerSaving();
+    Preferences preferences;
+    BLEService *pService;
 
-    void ultaPowerSaving();
-}
+    BLECharacteristic batteryCharageCharacteristic;
+
+    BLECharacteristic powerProfileCharacteristic;
+    BLEDescriptor powerProfileDescriptor;
+
+    PowerManagement()
+        : batteryCharageCharacteristic(BLEUUID((uint16_t)0x2A19), 
+              BLECharacteristic::PROPERTY_READ),
+
+          powerProfileCharacteristic(POWER_PROFILE_UUID,
+              BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE),
+          powerProfileDescriptor(BLEUUID((uint16_t)0x2901)) {};
+
+    void onWrite(BLECharacteristic *pCharacteristic);
+
+    static void bluetoothEventHandler(void *);
+
+    static void batteryMonitorTask(void *);
+
+public:
+    PowerManagement(const PowerManagement &obj) = delete;
+
+    static PowerManagement *get();
+
+    void init(BLEServer *pServer);
+
+    void setProfile(uint8_t profile);
+};

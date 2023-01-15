@@ -1,27 +1,47 @@
-#include <Arduino.h>
-#include <BLEUtils.h>
+#pragma once
+
 #include <BLE2902.h>
+#include <BLEUtils.h>
 
-#include <Devices.hpp>
+#include <SystemTask.hpp>
+#include <hardware/sensor/MAX30105.hpp>
 
-#define HEART_RATE_SERVICE_TASK_STACK_DEPTH 2000
-
-namespace HeartRateService
+class HeartRateSensing : public SystemTask
 {
-    extern BLEService *pService;
-    extern TaskHandle_t taskHandle;
+private:
+    static const uint16_t TASK_STACK_DEPTH = 2000;
+    static const uint8_t SENSOR_LOCATION = 1;
 
-    extern BLECharacteristic heartRateCharacteristic;
+    static HeartRateSensing *pInstance;
 
-    extern BLECharacteristic sensorLocationCharacteristic;
-    extern BLEDescriptor sensorLocationDescriptor;
+    BLEService *pService;
 
-    extern BLECharacteristic sensorTemperatureCharacteristic;
-    extern BLEDescriptor sensorTemperatureDescriptor;
+    BLECharacteristic heartRateCharacteristic;
 
-    extern const uint8_t sensorLocation;
+    BLECharacteristic sensorLocationCharacteristic;
+    BLEDescriptor sensorLocationDescriptor;
 
-    void createService(BLEServer *pServer, BLEAdvertising *pAdvertising);
+    BLECharacteristic sensorTemperatureCharacteristic;
+    BLEDescriptor sensorTemperatureDescriptor;
 
-    void serviceTask(void *);
-}
+    HeartRateSensing()
+        : heartRateCharacteristic(BLEUUID((uint16_t)0x2A37),
+            BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY),
+
+          sensorLocationCharacteristic(
+              BLEUUID((uint16_t)0x2A38), BLECharacteristic::PROPERTY_READ),
+          sensorLocationDescriptor(BLEUUID((uint16_t)0x2901)),
+
+          sensorTemperatureCharacteristic(BLEUUID((uint16_t)0x2A6E),
+              BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY),
+          sensorTemperatureDescriptor(BLEUUID((uint16_t)0x2901)) {};
+
+    static void task(void *);
+
+public:
+    HeartRateSensing(const HeartRateSensing &obj) = delete;
+
+    static HeartRateSensing *get();
+
+    void init(BLEServer *pServer, BLEAdvertising *pAdvertising);
+};

@@ -1,67 +1,89 @@
 #include <Arduino.h>
 #include <Wire.h>
 
-#define DEBUG
+// clang-format off
+#include <hardware/Bluetooth.hpp>
+#include <hardware/Battery.hpp>
+#include <hardware/Haptics.hpp>
+#include <hardware/Touch.hpp>
 
-// Hardware Services
-#include <Devices.hpp>
-#include <BLE.hpp>
+#include <hardware/sensor/BME280.hpp>
+#include <hardware/sensor/MAX30105.hpp>
 
-// BLE Services
 #include <services/PowerManagement.hpp>
-
-#include <services/Metronome.hpp>
 #include <services/EnvironmentalSensing.hpp>
 #include <services/HeartRate.hpp>
+#include <services/Metronome.hpp>
+// clang-format on
 
-#define DEVICE_NAME "TNET-CORE"
+// #define DEBUG
+
+const uint16_t BASE_SAMPLE_INTERVAL = 10000;
 
 void setup()
 {
-  Serial.begin(115200);
-  Wire.begin(23, 19);
+    Serial.begin(115200);
+    Wire.begin(23, 19);
 
-  // Initalise System Devices
-  BME280::initialise();
-  MAX30105::initialise();
-  Haptics::initialise();
+    delay(2500);
 
-#ifdef DEBUG
-  Serial.println("[INFO] All System Devices Initialsed");
-#endif
+    // Bluetooth
+    Bluetooth::get()->init("TNET-CORE");
+    Bluetooth::get()->startAdvertising();
 
-  // Initalise Bluetooth
-  Bluetooth::initialise(DEVICE_NAME);
+    // Battery
+    Battery::init(BASE_SAMPLE_INTERVAL);
 
-  // Seccondary Services
-  Metronome::createService(Bluetooth::pServer);
-  EnvironmentalSensing::createService(Bluetooth::pServer);
-  HeartRateService::createService(Bluetooth::pServer, Bluetooth::pAdvertising);
+    // Haptics
+    Haptics::init();
+    Haptics::vibrate(VibrationEffect::TICK);
 
-#ifdef DEBUG
-  Serial.println("[INFO] Starting Power Management Service");
-#endif
+    // Touch Sense
+    TouchSense::init();
 
-  // Primary Services
-  PowerManagementService::createService(Bluetooth::pServer);
+    // MAX30105 Heart Rate Sensor
+    MAX30105::get()->init(BASE_SAMPLE_INTERVAL);
 
-#ifdef DEBUG
-  Serial.println("[INFO] Starting Services");
-#endif
+    // BME280 Environmental Sensor
+    BME280::get()->init(BASE_SAMPLE_INTERVAL);
 
-  // Start Manual Services
-  vTaskResume(EnvironmentalSensing::taskHandle);
-  vTaskResume(HeartRateService::taskHandle);
+    // Initialise Bluetooth Services
+    BLEServer *pServer = Bluetooth::get()->pServer;
 
-#ifdef DEBUG
-  Serial.println("[INFO] All BLE Services Started");
-#endif
+    PowerManagement::get()->init(pServer);
 
-  // Start Advertising
-  Bluetooth::startAdvertising();
+    HeartRateSensing::get()->init(pServer, Bluetooth::get()->pAdvertising);
+
+    EnvironmentalSensing::get()->init(pServer);
+    
+    Metronome::get()->init(pServer);
 }
 
 void loop()
 {
-  delay(10000);
+#ifdef DEBUG
+
+    // clang-format off
+    const String tasks[6] = {
+        "Bluetooth Event Handler",
+        "Battery Monitoring Service",
+        "Metronome Service",
+        "Environmental Sensing Service",
+        "Touch Sense Task"
+    };
+    // clang-format on
+
+    for (uint8_t i = 0; i < 6; i++)
+    {
+        TaskHandle_t task = xTaskGetHandle(tasks[i].c_str());
+
+        if (task != NULL)
+        {
+            uint32_t watermark = uxTaskGetStackHighWaterMark(task);
+            Serial.printf("Task [%s] Stack Watermark: %i", tasks[i], watermark);
+        }
+    }
+#endif
+
+    delay(10000);
 }

@@ -1,27 +1,49 @@
-#include <Arduino.h>
-#include <BLEUtils.h>
+#pragma once
+
 #include <BLE2902.h>
+#include <BLEUtils.h>
+#include <Preferences.h>
 
-#include <Devices.hpp>
+#include <SystemTask.hpp>
+#include <hardware/sensor/BME280.hpp>
 
-#define SEA_LEVEL_PRESSURE 1013.25
-
-#define ENVIRONMENTAL_SENSING_TASK_STACK_DEPTH 2000
-
-namespace EnvironmentalSensing
+class EnvironmentalSensing : public SystemTask
 {
-    extern BLEService *pService;
-    extern TaskHandle_t taskHandle;
+private:
+    static const uint16_t TASK_STACK_DEPTH = 2000;
+    static constexpr float SEA_LEVEL_PRESSURE = 1013.25;
 
-    extern BLECharacteristic temperatureCharacteristic;
+    static EnvironmentalSensing *pInstance;
 
-    extern BLECharacteristic pressureCharacteristic;
+    BLEService *pService;
 
-    extern BLECharacteristic altitudeCharacteristic;
+    BLECharacteristic temperatureCharacteristic;
 
-    extern BLECharacteristic humidityCharacteristic;
+    BLECharacteristic pressureCharacteristic;
 
-    void createService(BLEServer *pServer);
+    BLECharacteristic altitudeCharacteristic;
 
-    void serviceTask(void *);
-}
+    BLECharacteristic humidityCharacteristic;
+
+    EnvironmentalSensing()
+        : temperatureCharacteristic(BLEUUID((uint16_t)0x2A6E),
+            BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY),
+
+          pressureCharacteristic(BLEUUID((uint16_t)0x2A6D),
+              BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY),
+
+          altitudeCharacteristic(BLEUUID((uint16_t)0x2AB3),
+              BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY),
+
+          humidityCharacteristic(BLEUUID((uint16_t)0x2A6F),
+              BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY) {};
+
+    static void task(void *);
+
+public:
+    EnvironmentalSensing(const EnvironmentalSensing &obj) = delete;
+
+    static EnvironmentalSensing *get();
+
+    void init(BLEServer *pServer);
+};

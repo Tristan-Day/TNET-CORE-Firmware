@@ -1,68 +1,22 @@
 #include <services/HeartRate.hpp>
 
-namespace HeartRateService
+HeartRateSensing *HeartRateSensing::pInstance;
+
+void HeartRateSensing::task(void *)
 {
-    BLEService *pService;
-    TaskHandle_t taskHandle;
+    HeartRateSensing *self = HeartRateSensing::get();
+    MAX30105 *sensor = MAX30105::get();
 
-    BLECharacteristic heartRateCharacteristic(
-        BLEUUID((uint16_t)0x2A37),
-        BLECharacteristic::PROPERTY_READ |
-        BLECharacteristic::PROPERTY_NOTIFY);
+    const uint8_t sensorLocation = HeartRateSensing::SENSOR_LOCATION;
+    self->sensorLocationCharacteristic.setValue((uint8_t *)&sensorLocation, 1);
 
-    BLECharacteristic sensorLocationCharacteristic(
-        BLEUUID((uint16_t)0x2A38),
-        BLECharacteristic::PROPERTY_READ);
-    BLEDescriptor sensorLocationDescriptor(BLEUUID((uint16_t)0x2901));
-
-    BLECharacteristic sensorTemperatureCharacteristic(
-        BLEUUID((uint16_t)0x2A6E),
-        BLECharacteristic::PROPERTY_READ |
-        BLECharacteristic::PROPERTY_NOTIFY);
-    BLEDescriptor sensorTemperatureDescriptor(BLEUUID((uint16_t)0x2901));
-
-    const uint8_t sensorLocation = 0x1;
-}
-
-void HeartRateService::createService(BLEServer *pServer, BLEAdvertising *pAdvertising)
-{
-    if (not MAX30105::connectionState) {return;}
-
-    pService = pServer->createService(BLEUUID((uint16_t)0x180D));
-    pAdvertising->addServiceUUID(BLEUUID((uint16_t)0x180D));
-
-    pService->addCharacteristic(&heartRateCharacteristic);
-    heartRateCharacteristic.addDescriptor(new BLE2902());
-
-    pService->addCharacteristic(&sensorLocationCharacteristic);
-    sensorLocationDescriptor.setValue("Sensor Location");
-    sensorLocationCharacteristic.addDescriptor(&sensorLocationDescriptor);
-
-    pService->addCharacteristic(&sensorTemperatureCharacteristic);
-    sensorLocationDescriptor.setValue("Sensor Temperature");
-    sensorLocationCharacteristic.addDescriptor(&sensorLocationDescriptor);
-    sensorTemperatureCharacteristic.addDescriptor(new BLE2902());
-
-    pService->start();
-
-    xTaskCreate(serviceTask,
-                "Heart Rate Service",
-                HEART_RATE_SERVICE_TASK_STACK_DEPTH,
-                NULL,
-                tskIDLE_PRIORITY,
-                &taskHandle);
-    
-    vTaskSuspend(taskHandle);
-}
-
-void HeartRateService::serviceTask(void*)
-{
-    sensorLocationCharacteristic.setValue((uint8_t *)&sensorLocation, 1);
     uint8_t heartRateData[8];
 
     while (true)
     {
-        if (MAX30105::contactDetected)
+        xSemaphoreTake(self->taskSemaphore, portMAX_DELAY);
+
+        if (sensor->contactDetected)
         {
             heartRateData[0] = 0b00001110;
         }
@@ -70,16 +24,51 @@ void HeartRateService::serviceTask(void*)
         {
             heartRateData[0] = 0b00001100;
         }
-        heartRateData[1] = MAX30105::getHeartRate();
+        heartRateData[1] = sensor->getHeartRate();
 
-        heartRateCharacteristic.setValue(heartRateData, 8);
-        heartRateCharacteristic.notify();
+        self->heartRateCharacteristic.setValue(heartRateData, 8);
+        self->heartRateCharacteristic.notify();
 
-        uint16_t sensorTemperature = MAX30105::device.readTemperature() * 100;
+        // clang-format off
+        uint16_t sensorTemperature = sensor->getTemperature() * 100;
+        self->sensorTemperatureCharacteristic.setValue((uint8_t *)&sensorTemperature, 2);
+        // clang-format on
 
-        sensorTemperatureCharacteristic.setValue((uint8_t *)&sensorTemperature, 2);
-        sensorTemperatureCharacteristic.notify();
-
-        delay(MAX30105::sampleInterval);
+        xSemaphoreGive(self->taskSemaphore);
+        delay(sensor->sampleInterval);
     }
+}
+
+HeartRateSensing *HeartRateSensing::get()
+{
+    if (pInstance == NULL)
+    {
+        pInstance = new HeartRateSensing();
+    }
+    return pInstance;
+}
+
+void HeartRateSensing::init(BLEServer *pServer, BLEAdvertising *pAdvertising)
+{
+    pService = pServer->createService(BLEUUID((uint16_t)0x180D));
+    pAdvertising->addServiceUUID(BLEUUID((uint16_t)0x180D));
+    taskSemaphore = xSemaphoreCreateBinary();
+
+    pService->addCharacteristic(&heartRateCharacteristic);
+    heartRateCharacteristic.addDescriptor(new BLE2902);
+
+    pService->addCharacteristic(&sensorLocationCharacteristic);
+    sensorLocationDescriptor.setValue("Sensor Location");
+    sensorLocationCharacteristic.addDescriptor(&sensorLocationDescriptor);
+
+    pService->addCharacteristic(&sensorTemperatureCharacteristic);
+    sensorTemperatureDescriptor.setValue("Sensor Temperature");
+    sensorTemperatureCharacteristic.addDescriptor(&sensorTemperatureDescriptor);
+
+    pService->start();
+
+    xTaskCreate(task, "Heart Rate Sensing Service", TASK_STACK_DEPTH, NULL,
+        tskIDLE_PRIORITY, &taskHandle);
+
+    xSemaphoreGive(taskSemaphore);
 }
