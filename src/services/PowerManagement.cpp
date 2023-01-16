@@ -1,7 +1,5 @@
 #include <services/PowerManagement.hpp>
 
-#define DEBUG
-
 void PowerProfile::active()
 {
     setCpuFrequencyMhz(240);
@@ -61,9 +59,12 @@ void PowerProfile::ultaPowerSaving()
 #endif
 }
 
-PowerManagement *PowerManagement::pInstance;
+PowerManagementService *PowerManagementService::pInstance;
 
-void PowerManagement::onWrite(BLECharacteristic *pCharacteristic)
+const std::string PowerManagementService::POWER_PROFILE_UUID 
+    = "b9c1209b-4c6b-4226-ad92-18b1f1bea61f";
+
+void PowerManagementService::onWrite(BLECharacteristic *pCharacteristic)
 {
 #ifdef DEBUG
     Serial.println("[INFO] Write Callback for Power Profile Chraracteristic");
@@ -74,7 +75,7 @@ void PowerManagement::onWrite(BLECharacteristic *pCharacteristic)
 }
 
 // clang-format off
-void PowerManagement::bluetoothEventHandler(void *)
+void PowerManagementService::bluetoothEventHandler(void *)
 {
     while (true)
     {
@@ -91,7 +92,7 @@ void PowerManagement::bluetoothEventHandler(void *)
 }
 // clang-format on
 
-void PowerManagement::batteryMonitorTask(void *)
+void PowerManagementService::batteryMonitorTask(void *)
 {
     while (true)
     {
@@ -102,16 +103,16 @@ void PowerManagement::batteryMonitorTask(void *)
     }
 }
 
-PowerManagement *PowerManagement::get()
+PowerManagementService *PowerManagementService::get()
 {
     if (pInstance == NULL)
     {
-        pInstance = new PowerManagement();
+        pInstance = new PowerManagementService();
     }
     return pInstance;
 }
 
-void PowerManagement::init(BLEServer *pServer)
+void PowerManagementService::init(BLEServer *pServer)
 {
     preferences.begin("PWR MANAGEMENT");
     pService = pServer->createService(BLEUUID((uint16_t)0x180F));
@@ -135,7 +136,7 @@ void PowerManagement::init(BLEServer *pServer)
         NULL, tskIDLE_PRIORITY + 0, NULL);
 }
 
-void PowerManagement::setProfile(uint8_t profile)
+void PowerManagementService::setProfile(uint8_t profile)
 {
     switch (profile)
     {

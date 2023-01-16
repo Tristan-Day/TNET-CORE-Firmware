@@ -1,13 +1,13 @@
 #include <services/HeartRate.hpp>
 
-HeartRateSensing *HeartRateSensing::pInstance;
+HeartRateService *HeartRateService::pInstance;
 
-void HeartRateSensing::task(void *)
+void HeartRateService::task(void *)
 {
-    HeartRateSensing *self = HeartRateSensing::get();
+    HeartRateService *self = HeartRateService::get();
     MAX30105 *sensor = MAX30105::get();
 
-    const uint8_t sensorLocation = HeartRateSensing::SENSOR_LOCATION;
+    const uint8_t sensorLocation = HeartRateService::SENSOR_LOCATION;
     self->sensorLocationCharacteristic.setValue((uint8_t *)&sensorLocation, 1);
 
     uint8_t heartRateData[8];
@@ -39,16 +39,16 @@ void HeartRateSensing::task(void *)
     }
 }
 
-HeartRateSensing *HeartRateSensing::get()
+HeartRateService *HeartRateService::get()
 {
     if (pInstance == NULL)
     {
-        pInstance = new HeartRateSensing();
+        pInstance = new HeartRateService();
     }
     return pInstance;
 }
 
-void HeartRateSensing::init(BLEServer *pServer, BLEAdvertising *pAdvertising)
+void HeartRateService::init(BLEServer *pServer, BLEAdvertising *pAdvertising)
 {
     pService = pServer->createService(BLEUUID((uint16_t)0x180D));
     pAdvertising->addServiceUUID(BLEUUID((uint16_t)0x180D));

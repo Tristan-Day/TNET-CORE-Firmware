@@ -12,6 +12,7 @@
 
 #include <services/PowerManagement.hpp>
 #include <services/EnvironmentalSensing.hpp>
+#include <services/Notification.hpp>
 #include <services/HeartRate.hpp>
 #include <services/Metronome.hpp>
 // clang-format on
@@ -50,13 +51,12 @@ void setup()
     // Initialise Bluetooth Services
     BLEServer *pServer = Bluetooth::get()->pServer;
 
-    PowerManagement::get()->init(pServer);
+    PowerManagementService::get()->init(pServer);
+    NotificationService::get()->init(pServer);
+    EnvironmentService::get()->init(pServer);
+    MetronomeService::get()->init(pServer);
 
-    HeartRateSensing::get()->init(pServer, Bluetooth::get()->pAdvertising);
-
-    EnvironmentalSensing::get()->init(pServer);
-    
-    Metronome::get()->init(pServer);
+    HeartRateService::get()->init(pServer, Bluetooth::get()->pAdvertising);
 }
 
 void loop()

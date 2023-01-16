@@ -4,9 +4,6 @@
 
 class SystemTask
 {
-    private:
-        bool suspended;
-
     protected:
         TaskHandle_t taskHandle;
         SemaphoreHandle_t taskSemaphore;

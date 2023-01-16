@@ -7,13 +7,13 @@
 #include <SystemTask.hpp>
 #include <hardware/sensor/BME280.hpp>
 
-class EnvironmentalSensing : public SystemTask
+class EnvironmentService : public SystemTask
 {
 private:
     static const uint16_t TASK_STACK_DEPTH = 2000;
     static constexpr float SEA_LEVEL_PRESSURE = 1013.25;
 
-    static EnvironmentalSensing *pInstance;
+    static EnvironmentService *pInstance;
 
     BLEService *pService;
 
@@ -25,7 +25,7 @@ private:
 
     BLECharacteristic humidityCharacteristic;
 
-    EnvironmentalSensing()
+    EnvironmentService()
         : temperatureCharacteristic(BLEUUID((uint16_t)0x2A6E),
             BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY),
 
@@ -41,9 +41,9 @@ private:
     static void task(void *);
 
 public:
-    EnvironmentalSensing(const EnvironmentalSensing &obj) = delete;
+    EnvironmentService(const EnvironmentService &obj) = delete;
 
-    static EnvironmentalSensing *get();
+    static EnvironmentService *get();
 
     void init(BLEServer *pServer);
 };

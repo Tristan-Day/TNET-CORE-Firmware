@@ -1,10 +1,10 @@
 #include <services/EnvironmentalSensing.hpp>
 
-EnvironmentalSensing *EnvironmentalSensing::pInstance;
+EnvironmentService *EnvironmentService::pInstance;
 
-void EnvironmentalSensing::task(void *)
+void EnvironmentService::task(void *)
 {
-    EnvironmentalSensing *self = EnvironmentalSensing::get();
+    EnvironmentService *self = EnvironmentService::get();
     BME280 *sensor = BME280::get();
 
     while (true)
@@ -41,16 +41,16 @@ void EnvironmentalSensing::task(void *)
     }
 }
 
-EnvironmentalSensing *EnvironmentalSensing::get()
+EnvironmentService *EnvironmentService::get()
 {
     if (pInstance == NULL)
     {
-        pInstance = new EnvironmentalSensing();
+        pInstance = new EnvironmentService();
     }
     return pInstance;
 }
 
-void EnvironmentalSensing::init(BLEServer *pServer)
+void EnvironmentService::init(BLEServer *pServer)
 {
     pService = pServer->createService(BLEUUID((uint16_t)0x181A));
     taskSemaphore = xSemaphoreCreateBinary();

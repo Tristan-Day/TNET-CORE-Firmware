@@ -51,25 +51,25 @@ void TouchSense::eventProcessor(TouchEvent event)
     Serial.println("[---- END TOUCH EVENT ----]");
 #endif
 
-    EventBits_t xBitsToSet = TouchEvent::NONE;
+    EventBits_t xEventBits = TouchEvent::NONE;
     unsigned long lastEventInterval = event.timestamp - lastEvent.timestamp;
 
     if (event.duration > LONG_HOLD_MIN and event.duration < LONG_HOLD_MAX)
     {
-        xBitsToSet = TouchEvent::LONG_HOLD;
+        xEventBits = TouchEvent::LONG_HOLD;
     }
     else if (lastEventInterval < DOUBLE_TAP_MAX)
     {
-        xBitsToSet = TouchEvent::DOUBLE_TAP;
+        xEventBits = TouchEvent::DOUBLE_TAP;
     }
 
     // Set and clear the touch event group
-    if (xBitsToSet != TouchEvent::NONE)
+    if (xEventBits != TouchEvent::NONE)
     {
-        xEventGroupSetBits(touchEventGroup, xBitsToSet);
+        xEventGroupSetBits(touchEventGroup, xEventBits);
         Haptics::vibrate(VibrationEffect::TICK);
         delay(1000);
-        xEventGroupClearBits(touchEventGroup, xBitsToSet);
+        xEventGroupClearBits(touchEventGroup, xEventBits);
 
         lastEvent = TouchEvent();
     }

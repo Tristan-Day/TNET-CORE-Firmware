@@ -3,16 +3,12 @@
 #include <BLE2902.h>
 #include <Preferences.h>
 
-#include <hardware/Bluetooth.hpp>
 #include <hardware/Battery.hpp>
+#include <hardware/Bluetooth.hpp>
 
-#include <hardware/sensor/MAX30105.hpp>
 #include <hardware/sensor/BME280.hpp>
 #include <hardware/sensor/GY8511.hpp>
-
-#include <SystemTask.hpp>
-
-#define POWER_PROFILE_UUID "b9c1209b-4c6b-4226-ad92-18b1f1bea61f"
+#include <hardware/sensor/MAX30105.hpp>
 
 namespace PowerProfile
 {
@@ -33,12 +29,14 @@ namespace PowerProfile
     };
 };
 
-class PowerManagement : public SystemTask, BLECharacteristicCallbacks
+class PowerManagementService : public BLECharacteristicCallbacks
 {
 private:
+    static const std::string POWER_PROFILE_UUID;
+
     static const uint16_t TASK_STACK_DEPTH = 2000;
 
-    static PowerManagement *pInstance;
+    static PowerManagementService *pInstance;
 
     Preferences preferences;
     BLEService *pService;
@@ -48,9 +46,9 @@ private:
     BLECharacteristic powerProfileCharacteristic;
     BLEDescriptor powerProfileDescriptor;
 
-    PowerManagement()
-        : batteryCharageCharacteristic(BLEUUID((uint16_t)0x2A19), 
-              BLECharacteristic::PROPERTY_READ),
+    PowerManagementService()
+        : batteryCharageCharacteristic(
+            BLEUUID((uint16_t)0x2A19), BLECharacteristic::PROPERTY_READ),
 
           powerProfileCharacteristic(POWER_PROFILE_UUID,
               BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE),
@@ -63,9 +61,9 @@ private:
     static void batteryMonitorTask(void *);
 
 public:
-    PowerManagement(const PowerManagement &obj) = delete;
+    PowerManagementService(const PowerManagementService &obj) = delete;
 
-    static PowerManagement *get();
+    static PowerManagementService *get();
 
     void init(BLEServer *pServer);
 

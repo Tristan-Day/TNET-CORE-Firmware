@@ -6,13 +6,13 @@
 #include <SystemTask.hpp>
 #include <hardware/sensor/MAX30105.hpp>
 
-class HeartRateSensing : public SystemTask
+class HeartRateService : public SystemTask
 {
 private:
     static const uint16_t TASK_STACK_DEPTH = 2000;
     static const uint8_t SENSOR_LOCATION = 1;
 
-    static HeartRateSensing *pInstance;
+    static HeartRateService *pInstance;
 
     BLEService *pService;
 
@@ -24,7 +24,7 @@ private:
     BLECharacteristic sensorTemperatureCharacteristic;
     BLEDescriptor sensorTemperatureDescriptor;
 
-    HeartRateSensing()
+    HeartRateService()
         : heartRateCharacteristic(BLEUUID((uint16_t)0x2A37),
             BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY),
 
@@ -39,9 +39,9 @@ private:
     static void task(void *);
 
 public:
-    HeartRateSensing(const HeartRateSensing &obj) = delete;
+    HeartRateService(const HeartRateService &obj) = delete;
 
-    static HeartRateSensing *get();
+    static HeartRateService *get();
 
     void init(BLEServer *pServer, BLEAdvertising *pAdvertising);
 };

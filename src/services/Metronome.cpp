@@ -1,8 +1,11 @@
 #include <services/Metronome.hpp>
 
-Metronome *Metronome::pInstance;
+MetronomeService *MetronomeService::pInstance;
 
-void Metronome::onWrite(BLECharacteristic *pCharacteristic)
+const std::string MetronomeService::SERVICE_UUID = "429b5aa8-d015-4705-99db-a51c49fc84b6";
+const std::string MetronomeService::TEMPO_UUID = "726eb1ec-e713-400a-a7d3-b38a94d7095c";
+
+void MetronomeService::onWrite(BLECharacteristic *pCharacteristic)
 {
     std::string characteristicUUID = pCharacteristic->getUUID().toString();
 
@@ -24,16 +27,16 @@ void Metronome::onWrite(BLECharacteristic *pCharacteristic)
             suspend();
         }
     }
-    else if (characteristicUUID == METRONOME_TEMPO_UUID)
+    else if (characteristicUUID == TEMPO_UUID)
     {
         setTempo(*pCharacteristic->getData());
         preferences.putUChar("TEMPO", *pCharacteristic->getData());
     }
 }
 
-void Metronome::task(void *)
+void MetronomeService::task(void *)
 {
-    Metronome *self = get();
+    MetronomeService *self = get();
 
     while (true)
     {
@@ -44,19 +47,19 @@ void Metronome::task(void *)
     }
 }
 
-Metronome *Metronome::get()
+MetronomeService *MetronomeService::get()
 {
     if (pInstance == NULL)
     {
-        pInstance = new Metronome();
+        pInstance = new MetronomeService();
     }
     return pInstance;
 }
 
-void Metronome::init(BLEServer *pServer)
+void MetronomeService::init(BLEServer *pServer)
 {
     preferences.begin("METRONOME");
-    pService = pServer->createService(METRONOME_SERVICE_UUID);
+    pService = pServer->createService(SERVICE_UUID);
     taskSemaphore = xSemaphoreCreateBinary();
 
     pService->addCharacteristic(&stateCharacteristic);
@@ -78,7 +81,7 @@ void Metronome::init(BLEServer *pServer)
         tskIDLE_PRIORITY, &taskHandle);
 }
 
-void Metronome::setTempo(uint8_t tempo)
+void MetronomeService::setTempo(uint8_t tempo)
 {
     beatInterval = (60000 / tempo) - BEAT_DURATION;
     tempoCharacteristic.setValue((uint8_t *)&tempo, 1);

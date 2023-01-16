@@ -6,16 +6,16 @@
 #include <SystemTask.hpp>
 #include <hardware/Haptics.hpp>
 
-#define METRONOME_SERVICE_UUID "429b5aa8-d015-4705-99db-a51c49fc84b6"
-#define METRONOME_TEMPO_UUID "726eb1ec-e713-400a-a7d3-b38a94d7095c"
-
-class Metronome : public SystemTask, BLECharacteristicCallbacks
+class MetronomeService : public SystemTask, BLECharacteristicCallbacks
 {
 private:
+    static const std::string SERVICE_UUID;
+    static const std::string TEMPO_UUID;
+
     static const uint16_t TASK_STACK_DEPTH = 2000;
     static const uint16_t BEAT_DURATION = 200;
 
-    static Metronome *pInstance;
+    static MetronomeService *pInstance;
 
     Preferences preferences;
     BLEService *pService;
@@ -28,12 +28,12 @@ private:
 
     unsigned long beatInterval;
 
-    Metronome()
+    MetronomeService()
         : stateCharacteristic(BLEUUID((uint16_t)0x2AE2),
             BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE),
           stateDescriptor(BLEUUID((uint16_t)0x2901)),
 
-          tempoCharacteristic(METRONOME_TEMPO_UUID,
+          tempoCharacteristic(TEMPO_UUID,
               BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE),
           tempoDescriptor(BLEUUID((uint16_t)0x2901)) {};
 
@@ -42,9 +42,9 @@ private:
     static void task(void *);
 
 public:
-    Metronome(const Metronome &obj) = delete;
+    MetronomeService(const MetronomeService &obj) = delete;
 
-    static Metronome *get();
+    static MetronomeService *get();
 
     void init(BLEServer *pServer);
 

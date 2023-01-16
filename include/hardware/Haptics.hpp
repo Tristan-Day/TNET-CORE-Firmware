@@ -13,6 +13,8 @@ struct VibrationEffect
     list<uint16_t> timings;
     uint8_t repeat;
 
+    VibrationEffect() {};
+
     VibrationEffect(list<uint16_t> timings, uint8_t repeat)
         : timings(timings), repeat(repeat) {};
 };
