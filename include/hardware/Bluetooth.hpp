@@ -1,31 +1,35 @@
 #pragma once
 
 #include <Arduino.h>
+
 #include <BLEDevice.h>
 #include <BLEServer.h>
 
+const std::string DEVICE_NAME = "TNET-CORE (Series 2)";
+constexpr esp_power_level_t TRANSMISSION_POWER = ESP_PWR_LVL_N0;
+
 class Bluetooth : public BLEServerCallbacks
 {
-private:
-    static Bluetooth *pInstance;
+  private:
+    static Bluetooth* instance;
 
-    Bluetooth() { }
+    Bluetooth();
 
-    void onConnect(BLEServer *pServer);
+    void onConnect(BLEServer* pServer);
 
-    void onDisconnect(BLEServer *pServer);
+    void onDisconnect(BLEServer* pServer);
 
-public:
-    EventGroupHandle_t serverEventGroup;
+  public:
+    EventGroupHandle_t bluetoothEventGroup;
 
-    BLEServer *pServer;
-    BLEAdvertising *pAdvertising;
+    BLEServer* pServer = nullptr;
+    BLEAdvertising* pAdvertising = nullptr;
 
-    Bluetooth(const Bluetooth &obj) = delete;
+    static void init();
 
-    static Bluetooth *get();
+    static Bluetooth* get();
 
-    void init(std::string deviceName);
+    Bluetooth(Bluetooth& other) = delete;
 
-    void startAdvertising();
+    void operator=(const Bluetooth&) = delete;
 };

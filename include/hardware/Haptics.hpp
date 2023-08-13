@@ -1,39 +1,56 @@
 #pragma once
 
 #include <Arduino.h>
+
 #include <list>
 #include <mutex>
 
 using namespace std;
 
+uint8_t scale(uint8_t n, uint8_t a, uint8_t b, uint8_t c, uint8_t d);
+
+struct Vibration
+{
+    uint32_t duration;
+    uint8_t amplitude;
+
+    Vibration(uint32_t duration, uint8_t amplitude);
+};
+
 struct VibrationEffect
 {
-    static VibrationEffect *TICK;
+    static VibrationEffect* CLICK;
 
-    list<uint16_t> timings;
-    uint8_t repeat;
+    static VibrationEffect* FALL;
 
-    VibrationEffect() {};
+    static VibrationEffect* RISE;
 
-    VibrationEffect(list<uint16_t> timings, uint8_t repeat)
-        : timings(timings), repeat(repeat) {};
+    list<Vibration> composition;
+
+    VibrationEffect(){};
+
+    VibrationEffect(list<Vibration> composition);
 };
 
 class Haptics
 {
-private:
-    static const uint8_t OUTPUT_PIN = LED_BUILTIN;
+  private:
+    static const uint8_t OUTPUT_PIN = A1;
 
-    static std::mutex mutex;
+    static Haptics* instance;
 
-public:
-    static void init();
+    std::mutex mutex;
 
-    static void vibrate(long millisecconds);
+    Haptics();
 
-    static void vibrate(VibrationEffect *effect);
+    void vibrate(uint8_t amplitude, uint32_t millisecconds);
 
-    static void aquireLock();
+  public:
+    static Haptics* get();
 
-    static void releaseLock();
+    void play(VibrationEffect* effect);
+
+    void aquireLock();
+
+    void releaseLock();
 };

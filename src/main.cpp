@@ -1,89 +1,53 @@
 #include <Arduino.h>
-#include <Wire.h>
 
-// clang-format off
 #include <hardware/Bluetooth.hpp>
-#include <hardware/Battery.hpp>
-#include <hardware/Haptics.hpp>
-#include <hardware/Touch.hpp>
+#include <hardware/PowerManager.hpp>
 
-#include <hardware/sensor/BME280.hpp>
-#include <hardware/sensor/MAX30105.hpp>
+#include <hardware/sensor/BME688.hpp>
+#include <hardware/sensor/GNSS.hpp>
 
-#include <services/PowerManagement.hpp>
-#include <services/EnvironmentalSensing.hpp>
-#include <services/Notification.hpp>
-#include <services/HeartRate.hpp>
-#include <services/Metronome.hpp>
-// clang-format on
-
-// #define DEBUG
-
-const uint16_t BASE_SAMPLE_INTERVAL = 10000;
+#include <service/Battery.hpp>
+#include <service/Environment.hpp>
 
 void setup()
 {
-    Serial.begin(115200);
-    Wire.begin(23, 19);
+    delay(5000);
 
-    delay(2500);
+    pinMode(I2C_POWER, OUTPUT);
+    pinMode(PIN_NEOPIXEL, OUTPUT);
 
-    // Bluetooth
-    Bluetooth::get()->init("TNET-CORE");
-    Bluetooth::get()->startAdvertising();
+    digitalWrite(I2C_POWER, LOW);
+    digitalWrite(PIN_NEOPIXEL, LOW);
 
-    // Battery
-    Battery::init(BASE_SAMPLE_INTERVAL);
+    Bluetooth::init();
+    PowerManager::init();
 
-    // Haptics
-    Haptics::init();
-    Haptics::vibrate(VibrationEffect::TICK);
+    Console* console = new Console();
 
-    // Touch Sense
-    TouchSense::init();
+    console->addCommand("ECHO", [](string input) 
+    {
+        return input;
+    });
 
-    // MAX30105 Heart Rate Sensor
-    MAX30105::get()->init(BASE_SAMPLE_INTERVAL);
+    console->addCommand("PROFILE", [&](string profile) 
+    {
+        uint8_t index = stoi(profile);
 
-    // BME280 Environmental Sensor
-    BME280::get()->init(BASE_SAMPLE_INTERVAL);
+        if (index != PowerManager::get()->getProfile())
+        {
+             PowerManager::get()->setProfile(index);
+        }
 
-    // Initialise Bluetooth Services
-    BLEServer *pServer = Bluetooth::get()->pServer;
+        return "✔️ Profile Set";
+    });
 
-    PowerManagementService::get()->init(pServer);
-    NotificationService::get()->init(pServer);
-    EnvironmentService::get()->init(pServer);
-    MetronomeService::get()->init(pServer);
+    BatteryService* batteryService = new BatteryService();
+    batteryService->start();
 
-    HeartRateService::get()->init(pServer, Bluetooth::get()->pAdvertising);
+    EnvironmentService* environmentService = new EnvironmentService();
+    environmentService->start();
 }
 
 void loop()
 {
-#ifdef DEBUG
-
-    // clang-format off
-    const String tasks[6] = {
-        "Bluetooth Event Handler",
-        "Battery Monitoring Service",
-        "Metronome Service",
-        "Environmental Sensing Service",
-        "Touch Sense Task"
-    };
-    // clang-format on
-
-    for (uint8_t i = 0; i < 6; i++)
-    {
-        TaskHandle_t task = xTaskGetHandle(tasks[i].c_str());
-
-        if (task != NULL)
-        {
-            uint32_t watermark = uxTaskGetStackHighWaterMark(task);
-            Serial.printf("Task [%s] Stack Watermark: %i", tasks[i], watermark);
-        }
-    }
-#endif
-
-    delay(10000);
 }

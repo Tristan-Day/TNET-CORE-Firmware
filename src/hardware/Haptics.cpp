@@ -1,47 +1,82 @@
 #include <hardware/Haptics.hpp>
 
-VibrationEffect *VibrationEffect::TICK = new VibrationEffect({ 500 }, 1);
+uint8_t scale(uint8_t n, uint8_t a, uint8_t b, uint8_t c, uint8_t d)
+{
+    if (n <= a)
+        return c;
 
-std::mutex Haptics::mutex;
+    if (n >= b)
+        return d;
 
-void Haptics::init()
+    // Calculate the proportion of n within the range [a, b]
+    double proportion = static_cast<double>(n - a) / (b - a);
+
+    // Scale the proportion to the range [e, f]
+    return c + proportion * (d - c);
+}
+
+Vibration::Vibration(uint32_t duration, uint8_t amplitude)
+{
+    this->duration = duration;
+    this->amplitude = amplitude;
+}
+
+VibrationEffect* VibrationEffect::CLICK = new VibrationEffect({{150, 100}});
+
+VibrationEffect* VibrationEffect::FALL =
+    new VibrationEffect({{150, 100}, {80, 85}, {30, 50}, {80, 30}, {150, 5}});
+
+VibrationEffect* VibrationEffect::RISE =
+    new VibrationEffect({{150, 5}, {80, 30}, {30, 50}, {80, 85}, {150, 100}});
+
+VibrationEffect::VibrationEffect(list<Vibration> composition)
+    : composition(composition)
+{
+    this->composition = composition;
+}
+
+Haptics* Haptics::instance = nullptr;
+
+Haptics::Haptics()
 {
     pinMode(OUTPUT_PIN, OUTPUT);
-    digitalWrite(OUTPUT_PIN, HIGH);
 }
 
-void Haptics::vibrate(long millisecconds)
+void Haptics::vibrate(uint8_t amplitude, uint32_t millisecconds)
 {
-    digitalWrite(OUTPUT_PIN, LOW);
-    delay(millisecconds);
-    digitalWrite(OUTPUT_PIN, HIGH);
-}
-
-void Haptics::vibrate(VibrationEffect *effect)
-{
-#ifdef DEBUG
-    Serial.println("[--- BEGIN EFFECT CONFIG ---]");
-    Serial.println(effect->timings.size());
-    Serial.println(effect->repeat);
-    Serial.println("[---- END EFFECT CONFIG ----]");
-#endif
-
-    for (uint8_t i = 0; i < effect->repeat; i++)
+    if (amplitude = 0)
     {
-        bool toggle = true;
-        for (uint16_t const &timing : effect->timings)
-        {
-            if (toggle)
-            {
-                Haptics::vibrate(timing);
-            }
-            else
-            {
-                delay(timing);
-            }
-            toggle = !toggle;
-        }
+        analogWrite(OUTPUT_PIN, amplitude);
     }
+    else
+    {
+        analogWrite(OUTPUT_PIN, scale(amplitude, 0, 100, 190, 255));
+    }
+
+    delay(millisecconds);
+}
+
+Haptics* Haptics::get()
+{
+    if (instance == NULL)
+    {
+        instance = new Haptics();
+    }
+    return instance;
+}
+
+void Haptics::play(VibrationEffect* effect)
+{
+    aquireLock();
+
+    for (Vibration vibration : effect->composition)
+    {
+        vibrate(vibration.amplitude, vibration.duration);
+    }
+
+    analogWrite(OUTPUT_PIN, 0);
+
+    releaseLock();
 }
 
 void Haptics::aquireLock()

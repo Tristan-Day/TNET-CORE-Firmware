@@ -1,15 +1,14 @@
 ---
-BasedOnStyle: WebKit
-AlignOperands: 'true'
-BreakBeforeBraces: Allman
-BreakConstructorInitializers: BeforeColon
-IndentWidth: '4'
-ColumnLimit: '85'
+BasedOnStyle: Microsoft
+
+AllowShortFunctionsOnASingleLine: None
+AllowShortBlocksOnASingleLine: true
+
+IndentWidth: 4
+ColumnLimit: 85
+
 NamespaceIndentation: All
-PointerAlignment: Right
-ReflowComments: 'true'
-# BinPackArguments: false
-# BinPackParameters: false
-# ExperimentalAutoDetectBinPacking: false
-# AllowAllParametersOfDeclarationOnNextLine: false
+PointerAlignment: Left
+
+SortIncludes: false
 ...

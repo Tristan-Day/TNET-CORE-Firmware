@@ -1,33 +1,49 @@
 #include <hardware/Bluetooth.hpp>
 
-#define DEBUG
+Bluetooth* Bluetooth::instance = nullptr;
 
-Bluetooth *Bluetooth::pInstance;
+Bluetooth::Bluetooth()
+{
+    bluetoothEventGroup = xEventGroupCreate();
 
-void Bluetooth::onConnect(BLEServer *pServer)
+    BLEDevice::init(DEVICE_NAME);
+    BLEDevice::setPower(TRANSMISSION_POWER);
+
+    pServer = BLEDevice::createServer();
+    pServer->setCallbacks(this);
+
+    pAdvertising = BLEDevice::getAdvertising();
+    pAdvertising->start();
+
+#ifdef DEBUG
+    Serial.println("[INFO] Bluetooth Device Initialised");
+#endif
+}
+
+void Bluetooth::onConnect(BLEServer* pServer)
 {
     // Clear Disconnect Flag
     static const EventBits_t xBitsToClear = (1 << 1);
-    xEventGroupClearBits(serverEventGroup, xBitsToClear);
+    xEventGroupClearBits(bluetoothEventGroup, xBitsToClear);
 
     // Set Connected Flag
     static const EventBits_t xBitsToSet = (1 << 0);
-    xEventGroupSetBits(serverEventGroup, xBitsToSet);
+    xEventGroupSetBits(bluetoothEventGroup, xBitsToSet);
 
 #ifdef DEBUG
     Serial.println("[INFO] BLE Client Connected");
 #endif
 }
 
-void Bluetooth::onDisconnect(BLEServer *pServer)
+void Bluetooth::onDisconnect(BLEServer* pServer)
 {
     // Clear Connected Flag
     static const EventBits_t xBitsToClear = (1 << 0);
-    xEventGroupClearBits(serverEventGroup, xBitsToClear);
+    xEventGroupClearBits(bluetoothEventGroup, xBitsToClear);
 
     // Set Disconnect Flag
     static const EventBits_t xBitsToSet = (1 << 1);
-    xEventGroupSetBits(serverEventGroup, xBitsToSet);
+    xEventGroupSetBits(bluetoothEventGroup, xBitsToSet);
 
     pAdvertising->start();
 
@@ -36,35 +52,19 @@ void Bluetooth::onDisconnect(BLEServer *pServer)
 #endif
 }
 
-Bluetooth *Bluetooth::get()
+void Bluetooth::init()
 {
-    if (pInstance == NULL)
+    if (instance == nullptr)
     {
-        pInstance = new Bluetooth();
+        instance = new Bluetooth();
     }
-    return pInstance;
 }
 
-void Bluetooth::init(std::string deviceName)
+Bluetooth* Bluetooth::get()
 {
-    serverEventGroup = xEventGroupCreate();
-
-    BLEDevice::init(deviceName);
-    pServer = BLEDevice::createServer();
-    pServer->setCallbacks(get());
-
-    pAdvertising = BLEDevice::getAdvertising();
-
-#ifdef DEBUG
-    Serial.println("[INFO] Bluetooth Device Initialised");
-#endif
-}
-
-void Bluetooth::startAdvertising()
-{
-    pAdvertising->start();
-
-#ifdef DEBUG
-    Serial.println("[INFO] BLE Advertising Started");
-#endif
+    if (instance == nullptr)
+    {
+        init();
+    }
+    return instance;
 }
