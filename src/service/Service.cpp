@@ -9,13 +9,17 @@ void Service::task(void* parameters)
         xSemaphoreTake(service->taskSemaphore, portMAX_DELAY);
 
         service->execute();
-
+  
         xSemaphoreGive(service->taskSemaphore);
         vTaskDelay(pdMS_TO_TICKS(service->interval));
     }
 }
 
-void Service::execute() {}
+void Service::execute()
+{
+    string message = "[WARN] Task '" + getName() + "' has no task implementation";
+    Serial.println(message.c_str());
+}
 
 uint32_t Service::getStackDepth()
 {
@@ -45,6 +49,11 @@ string Service::getName()
     return "Untitled Service";
 }
 
+void Service::setInterval(uint32_t interval)
+{
+    this->interval = interval;
+}
+
 bool Service::hasFailed()
 {
     return failed;
@@ -52,10 +61,13 @@ bool Service::hasFailed()
 
 void Service::start()
 {
-    taskSemaphore = xSemaphoreCreateBinary();
-    xSemaphoreGive(taskSemaphore);
+    if (taskHandle != NULL)
+    {
+        taskSemaphore = xSemaphoreCreateBinary();
+        xSemaphoreGive(taskSemaphore);
 
-    xTaskCreate(task, getName().c_str(), getStackDepth(), this, tskIDLE_PRIORITY, &taskHandle);
+        xTaskCreate(task, getName().c_str(), getStackDepth(), this, tskIDLE_PRIORITY, &taskHandle);
+    }
 }
 
 void Service::suspend(TickType_t blockTime)

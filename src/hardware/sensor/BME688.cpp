@@ -7,8 +7,9 @@ BME688::BME688()
     sensor = new Adafruit_BME680(&Wire);
     sensor->begin(ADDRESS);
 
-    sensor->setTemperatureOversampling(BME680_OS_8X);
-    sensor->setHumidityOversampling(BME680_OS_8X);
+    sensor->setTemperatureOversampling(BME680_OS_4X);
+
+    sensor->setHumidityOversampling(BME680_OS_4X);
     sensor->setPressureOversampling(BME680_OS_4X);
 
     sensor->setIIRFilterSize(BME68X_FILTER_SIZE_31);
@@ -27,7 +28,7 @@ uint32_t BME688::getStackDepth()
 
 string BME688::getName()
 {
-    return "BME688";
+    return "BME688 Service";
 }
 
 BME688* BME688::get()

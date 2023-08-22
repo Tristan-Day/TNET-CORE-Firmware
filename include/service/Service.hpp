@@ -4,7 +4,7 @@
 
 using namespace std;
 
-constexpr long DEFAULT_INTERVAL = 10000;
+constexpr long DEFAULT_INTERVAL = 60000;
 constexpr long DEFAULT_STACK_DEPTH = 3000;
 
 class Service
@@ -29,6 +29,8 @@ class Service
     Service();
 
     virtual string getName();
+
+    void setInterval(uint32_t interval);
 
     bool hasFailed();
 

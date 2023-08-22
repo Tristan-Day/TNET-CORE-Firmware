@@ -1,10 +1,10 @@
 #pragma once
 
 #include <hardware/Bluetooth.hpp>
-#include <hardware/sensor/GNSS.hpp>
 
-#include <service/Service.hpp>
-#include <service/Console.hpp>
+#include <hardware/sensor/ICM20948.hpp>
+#include <hardware/sensor/MAX17048.hpp>
+#include <hardware/sensor/GNSS.hpp>
 
 #include <Preferences.h>
 
@@ -27,12 +27,14 @@ struct PowerProfile
 class PowerManager
 {
   private:
+    static constexpr float CHARGE_THRESHOLD = 15;
+
     static PowerManager* instance;
 
     Preferences preferences;
 
     PowerManager();
-
+    
     static void eventHandler(void*);
 
     void setProfile(uint8_t profile, bool overwrite);

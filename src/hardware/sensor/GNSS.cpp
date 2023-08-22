@@ -12,6 +12,8 @@ GNSS::GNSS()
 #ifdef DEBUG
     sensor->enableDebugging();
 #endif
+
+    sensor->hardReset();
 };
 
 GNSS* GNSS::get()

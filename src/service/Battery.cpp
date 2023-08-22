@@ -5,14 +5,6 @@ const string BatteryService::BATTERY_VOLTAGE_UUID =
 
 BatteryService::BatteryService() : Service()
 {
-    battery = new Adafruit_MAX17048();
-
-    if (not battery->begin())
-    {
-        setFailed(true);
-        return;
-    }
-
     chargeCharacteristic = new BLECharacteristic(
         BLEUUID((uint16_t)0x2A19),
         BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY);
@@ -21,7 +13,7 @@ BatteryService::BatteryService() : Service()
         BATTERY_VOLTAGE_UUID,
         BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY);
 
-    service = Bluetooth::get()->pServer->createService(BLEUUID((uint16_t)0x180F));
+    service = Bluetooth::get()->server->createService(BLEUUID((uint16_t)0x180F));
 
     service->addCharacteristic(chargeCharacteristic);
     chargeCharacteristic->addDescriptor(new BLE2902);
@@ -37,11 +29,10 @@ void BatteryService::execute()
 #ifdef DEBUG
     Serial.println("[INFO] Collecting Battery Data");
 #endif
-
-    uint8_t charge = battery->cellPercent();
+    uint8_t charge = MAX17048::get()->sensor->cellPercent();
     chargeCharacteristic->setValue((uint8_t*)&charge, 1);
 
-    uint16_t voltage = battery->cellVoltage() * 10;
+    uint16_t voltage = MAX17048::get()->sensor->cellVoltage() * 10;
     voltageCharacteristic->setValue((uint8_t*)&voltage, 2);
 }
 

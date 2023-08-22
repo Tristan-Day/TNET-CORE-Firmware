@@ -1,15 +1,12 @@
 #pragma once
 
 #include <service/Service.hpp>
-
-#include <Arduino.h>
 #include <Adafruit_BME680.h>
 
 class BME688 : public Service
 {
   private:
     static constexpr float TEMPERATURE_OFFSET = 5.83;
-
     static constexpr uint8_t ADDRESS = 0x76;
 
     static BME688* instance;

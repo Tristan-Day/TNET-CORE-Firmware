@@ -24,7 +24,7 @@ EnvironmentService::EnvironmentService() : Service()
         BLEUUID((uint16_t)0x2AB3),
         BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY);
 
-    service = Bluetooth::get()->pServer->createService(BLEUUID((uint16_t)0x181A));
+    service = Bluetooth::get()->server->createService(BLEUUID((uint16_t)0x181A));
 
     service->addCharacteristic(temperatureCharacteristic);
     temperatureCharacteristic->addDescriptor(new BLE2902());

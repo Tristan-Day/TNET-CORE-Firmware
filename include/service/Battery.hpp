@@ -1,10 +1,11 @@
 #pragma once
 
 #include <hardware/Bluetooth.hpp>
+#include <hardware/sensor/MAX17048.hpp>
+
 #include <service/Service.hpp>
 
 #include <BLE2902.h>
-#include <Adafruit_MAX1704X.h>
 
 class BatteryService : public Service
 {
@@ -19,8 +20,6 @@ class BatteryService : public Service
     void execute() override;
 
   public:
-    Adafruit_MAX17048* battery = nullptr;
-
     BatteryService();
 
     string getName() override;

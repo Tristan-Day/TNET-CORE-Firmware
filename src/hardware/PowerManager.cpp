@@ -4,7 +4,8 @@ void PowerProfile::optimised()
 {
     setCpuFrequencyMhz(160);
 
-    GNSS::get()->sensor->powerSaveMode(false, 1000);
+    GNSS::get()->sensor->powerSaveMode(false);
+    ICM20948::get()->sensor->sleep(false);
 
 #ifdef DEBUG
     Serial.println("[INFO] Optimised Profile Applied");
@@ -15,7 +16,8 @@ void PowerProfile::powerSaving()
 {
     setCpuFrequencyMhz(80);
 
-    GNSS::get()->sensor->powerSaveMode(true, 1000);
+    GNSS::get()->sensor->powerSaveMode(true);
+    ICM20948::get()->sensor->sleep(true);
 
 #ifdef DEBUG
     Serial.println("[INFO] Power Saving Profile Applied");
@@ -26,7 +28,8 @@ void PowerProfile::ultraPowerSaving()
 {
     setCpuFrequencyMhz(80);
 
-    GNSS::get()->sensor->powerSaveMode(true, 1000);
+    GNSS::get()->sensor->powerSaveMode(true);
+    ICM20948::get()->sensor->sleep(true);
 
 #ifdef DEBUG
     Serial.println("[INFO] Ultra Power Saving Profile Applied");

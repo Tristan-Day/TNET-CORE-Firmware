@@ -13,7 +13,7 @@ Console::Console()
     outputCharacteristic =
         new BLECharacteristic(OUTPUT_UUID, BLECharacteristic::PROPERTY_READ);
 
-    service = Bluetooth::get()->pServer->createService(SERVICE_UUID);
+    service = Bluetooth::get()->server->createService(SERVICE_UUID);
 
     service->addCharacteristic(inputCharacteristic);
     inputCharacteristic->addDescriptor(new BLE2902);
