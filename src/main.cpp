@@ -27,11 +27,7 @@ void setup()
     digitalWrite(I2C_POWER, LOW);
     digitalWrite(NEOPIXEL_POWER, LOW);
 
-    delay(5000);
-
-    Bluetooth::init();
-
-    delay(5000);
+    // Bluetooth::init();
 
 #ifdef DEBUG
     Serial.println("[INFO] Starting Power Manager");
@@ -39,39 +35,45 @@ void setup()
 
     PowerManager::init();
 
-    delay(5000);
-
 #ifdef DEBUG
     Serial.println("[INFO] Starting Bluetooth Services");
 #endif
 
-    Console* console = new Console();
+    // Console* console = new Console();
 
-    console->addCommand("ECHO", [](string input) { return input; });
+    // console->addCommand("ECHO", [](string input) { return input; });
 
-    console->addCommand("PROFILE", [&](string profile) {
-        uint8_t index = stoi(profile);
+    // console->addCommand("PROFILE", [&](string profile) {
+    //     uint8_t index = stoi(profile);
 
-        if (index != PowerManager::get()->getProfile())
-        {
-            PowerManager::get()->setProfile(index);
-        }
+    //     if (index != PowerManager::get()->getProfile())
+    //     {
+    //         PowerManager::get()->setProfile(index);
+    //     }
 
-        return "✔️ Profile Set";
-    });
+    //     return "✔️ Profile Set";
+    // });
 
-    BatteryService* batteryService = new BatteryService();
-    batteryService->start();
+    // BatteryService* batteryService = new BatteryService();
+    // batteryService->start();
 
-    EnvironmentService* environmentService = new EnvironmentService();
-    environmentService->start();
+    // EnvironmentService* environmentService = new EnvironmentService();
+    // environmentService->start();
+
+#ifdef DEBUG
+    Serial.println("[INFO] All Services Started");
+#endif
 }
 
 void loop()
 {
-#ifdef PROFILE
-
-#else
+// #ifdef PROFILE
+// #else
     vTaskDelete(NULL);
-#endif
+// #endif
+    // Serial.println(MAX17048::get()->sensor->cellPercent());
+    // Serial.println(BME688::get()->getTemperature());
+    // Serial.println(MAX30105::get()->getTemperature());
+
+    // delay(1000);
 }

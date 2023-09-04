@@ -9,7 +9,7 @@ class Bluetooth : public BLEServerCallbacks
 {
   private:
     static constexpr uint8_t TRANSMISSION_UNIT = 30;
-    static constexpr esp_power_level_t TRANSMISSION_POWER = ESP_PWR_LVL_N24;
+    static constexpr esp_power_level_t TRANSMISSION_POWER = ESP_PWR_LVL_N0;
 
     static std::string NAME;
 

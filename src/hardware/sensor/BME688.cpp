@@ -4,6 +4,10 @@ BME688* BME688::instance = nullptr;
 
 BME688::BME688()
 {
+#ifdef DEBUG
+    Serial.println("[INFO] Initalising Environmental Sensor");
+#endif
+
     sensor = new Adafruit_BME680(&Wire);
     sensor->begin(ADDRESS);
 
@@ -14,10 +18,18 @@ BME688::BME688()
 
     sensor->setIIRFilterSize(BME68X_FILTER_SIZE_31);
     sensor->setGasHeater(320, 150);
+
+#ifdef DEBUG
+    Serial.println("[INFO] Sensor Ready");
+#endif
 }
 
 void BME688::execute()
 {
+#ifdef DEBUG
+    Serial.println("[INFO] Reading Environmental Data");
+#endif
+
     sensor->performReading();
 }
 

@@ -29,10 +29,15 @@ void BatteryService::execute()
 #ifdef DEBUG
     Serial.println("[INFO] Collecting Battery Data");
 #endif
-    uint8_t charge = MAX17048::get()->sensor->cellPercent();
-    chargeCharacteristic->setValue((uint8_t*)&charge, 1);
 
+    uint8_t charge = MAX17048::get()->sensor->cellPercent();
     uint16_t voltage = MAX17048::get()->sensor->cellVoltage() * 10;
+
+#ifdef DEBUG
+    Serial.println("[INFO] Collected Battery Data");
+#endif
+
+    chargeCharacteristic->setValue((uint8_t*)&charge, 1);
     voltageCharacteristic->setValue((uint8_t*)&voltage, 2);
 }
 
