@@ -1,8 +1,8 @@
-# TNET - HCI - CORE
+# TNET - HCI CORE
 
-C++ firmware designed to interface hardware devices over Bluetooth Low Energy (BLE).
+HCI CORE, is a custom hardware project built from the ESP32 MCU. Designed to expose various sensors and HCI devices over Bluetooth Low Energy (BLE), this firmware aims to maximise power efficiency using programming techniques and RTOS constructs.
 
-The firmware demonstrates the use of standard C++ programming conventions, object-oriented design and RTOS constructs to provide efficient and maintainable code.
+## Bluetooth Low Energy
 
 BLE Services follow SIG-assigned numbers, maximising compatibility with other applications, including Strava.
 

@@ -1,72 +1,68 @@
 #include <service/Environment.hpp>
 
-EnvironmentService::EnvironmentService() : Service()
+EnvironmentService::EnvironmentService()
 {
     if (BME688::get()->hasFailed())
     {
-        setFailed(true);
         return;
     }
 
-    temperatureCharacteristic = new BLECharacteristic(
-        BLEUUID((uint16_t)0x2A6E),
-        BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY);
-
-    humidityCharacteristic = new BLECharacteristic(
-        BLEUUID((uint16_t)0x2A6F),
-        BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY);
-
-    pressureCharacteristic = new BLECharacteristic(
-        BLEUUID((uint16_t)0x2A6D),
-        BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY);
-
-    altitudeCharacteristic = new BLECharacteristic(
-        BLEUUID((uint16_t)0x2AB3),
-        BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY);
-
     service = Bluetooth::get()->server->createService(BLEUUID((uint16_t)0x181A));
 
-    service->addCharacteristic(temperatureCharacteristic);
-    temperatureCharacteristic->addDescriptor(new BLE2902());
+    TMP = service->createCharacteristic(
+        BLEUUID((uint16_t)0x2A6E), NIMBLE_PROPERTY::READ | NIMBLE_PROPERTY::NOTIFY);
 
-    service->addCharacteristic(pressureCharacteristic);
-    pressureCharacteristic->addDescriptor(new BLE2902());
+    PRE = service->createCharacteristic(
+        BLEUUID((uint16_t)0x2A6D), NIMBLE_PROPERTY::READ | NIMBLE_PROPERTY::NOTIFY);
 
-    service->addCharacteristic(altitudeCharacteristic);
-    altitudeCharacteristic->addDescriptor(new BLE2902());
+    HUM = service->createCharacteristic(
+        BLEUUID((uint16_t)0x2A6F), NIMBLE_PROPERTY::READ | NIMBLE_PROPERTY::NOTIFY);
 
-    service->addCharacteristic(humidityCharacteristic);
-    humidityCharacteristic->addDescriptor(new BLE2902());
+    ALT = service->createCharacteristic(
+        BLEUUID((uint16_t)0x2AB3), NIMBLE_PROPERTY::READ | NIMBLE_PROPERTY::NOTIFY);
+
+    CO2 = service->createCharacteristic(
+        BLEUUID((uint16_t)0x2B8C), NIMBLE_PROPERTY::READ | NIMBLE_PROPERTY::NOTIFY);
+
+    VOC = service->createCharacteristic(
+        BLEUUID((uint16_t)0x2BE7), NIMBLE_PROPERTY::READ | NIMBLE_PROPERTY::NOTIFY);
 
     service->start();
-};
+}
 
-void EnvironmentService::execute()
+void EnvironmentService::referesh()
 {
     BME688* sensor = BME688::get();
 
+    // Atmospheric Indicators
+
+    uint16_t temperature = sensor->TMP->get() * 100;
+    TMP->setValue((uint8_t*)&temperature, 2);
+    TMP->notify();
+
+    uint32_t pressure = sensor->PRE->get() * 10;
+    PRE->setValue((uint8_t*)&pressure, 4);
+    PRE->notify();
+
+    uint16_t humidity = sensor->HUM->get() * 100;
+    HUM->setValue((uint8_t*)&humidity, 2);
+    HUM->notify();
+
+    uint16_t altitude = sensor->ALT->get() * 10;
+    ALT->setValue((uint8_t*)&altitude, 2);
+    ALT->notify();
+
+    // Air Quality Indicators
+
+    uint16_t carbonDioxide = sensor->CO2->get();
+    CO2->setValue((uint8_t*)&carbonDioxide);
+    CO2->notify();
+
+    uint16_t volitileCompounds = sensor->VOC->get();
+    VOC->setValue((uint8_t*)&volitileCompounds);
+    VOC->notify();
+
 #ifdef DEBUG
-    Serial.println("[INFO] Collecting Environmental Data");
+    Serial.println("[INFO] Environmental Service Attributes Updated");
 #endif
-
-    uint16_t temperature = sensor->getTemperature() * 100;
-    temperatureCharacteristic->setValue((uint8_t*)&temperature, 2);
-    temperatureCharacteristic->notify();
-
-    uint32_t pressure = sensor->getPressure() * 10;
-    pressureCharacteristic->setValue((uint8_t*)&pressure, 4);
-    pressureCharacteristic->notify();
-
-    uint16_t humidity = sensor->getHumidity() * 100;
-    humidityCharacteristic->setValue((uint8_t*)&humidity, 2);
-    humidityCharacteristic->notify();
-
-    uint16_t altitude = sensor->getAltitude() * 10;
-    altitudeCharacteristic->setValue((uint8_t*)&altitude, 2);
-    altitudeCharacteristic->notify();
-}
-
-string EnvironmentService::getName()
-{
-    return "Environment Service";
 }

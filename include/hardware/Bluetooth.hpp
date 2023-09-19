@@ -2,16 +2,14 @@
 
 #include <Arduino.h>
 
-#include <BLEDevice.h>
-#include <BLEServer.h>
+#include <NimBLEDevice.h>
+#include <NimBLEServer.h>
 
-class Bluetooth : public BLEServerCallbacks
+class Bluetooth : public NimBLEServerCallbacks
 {
   private:
-    static constexpr uint8_t TRANSMISSION_UNIT = 30;
-    static constexpr esp_power_level_t TRANSMISSION_POWER = ESP_PWR_LVL_N24;
-
-    static std::string NAME;
+    static constexpr int8_t TRANSMISSION_POWER = ESP_PWR_LVL_P6;
+    static constexpr const char* DEVICE_NAME = "TNET - CORE (Series 2)";
 
     static Bluetooth* instance;
 
@@ -22,10 +20,10 @@ class Bluetooth : public BLEServerCallbacks
     void onDisconnect(BLEServer* server);
 
   public:
-    EventGroupHandle_t bluetoothEventGroup;
+    EventGroupHandle_t connectionEvent;
 
-    BLEServer* server = nullptr;
-    BLEAdvertising* advertising = nullptr;
+    NimBLEServer* server;
+    NimBLEAdvertising* advertising;
 
     static void init();
 

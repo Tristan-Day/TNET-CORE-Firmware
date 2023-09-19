@@ -11,19 +11,16 @@ uint8_t scale(uint8_t n, uint8_t a, uint8_t b, uint8_t c, uint8_t d);
 
 struct Vibration
 {
-    uint32_t duration;
     uint8_t amplitude;
+    uint32_t duration;
 
-    Vibration(uint32_t duration, uint8_t amplitude);
+    Vibration(uint8_t amplitude, uint32_t duration);
 };
 
 struct VibrationEffect
 {
     static VibrationEffect* CLICK;
-
-    static VibrationEffect* FALL;
-
-    static VibrationEffect* RISE;
+    static VibrationEffect* DOUBLE_CLICK;
 
     list<Vibration> composition;
 

@@ -3,25 +3,31 @@
 #include <hardware/Bluetooth.hpp>
 #include <hardware/sensor/BME688.hpp>
 
-#include <BLE2902.h>
-#include <Preferences.h>
-
-class EnvironmentService : public Service
+class EnvironmentService
 {
   private:
-    static constexpr float SEA_LEVEL_PRESSURE = 1013.25;
-
     BLEService* service = nullptr;
 
-    BLECharacteristic* temperatureCharacteristic;
-    BLECharacteristic* humidityCharacteristic;
-    BLECharacteristic* pressureCharacteristic;
-    BLECharacteristic* altitudeCharacteristic;
+    // @brief Temperature in Degrees Celsius
+    BLECharacteristic* TMP;
 
-    void execute() override;
+    // @brief Atmospheric Humidity
+    BLECharacteristic* HUM;
+
+    // @brief Atmospheric Pressure
+    BLECharacteristic* PRE;
+
+    // @brief Altitude in M
+    BLECharacteristic* ALT;
+
+    // @brief Carbon Dioxide Levels in PPM
+    BLECharacteristic* CO2;
+
+    // @brief Volitile Organic Compounds in PPM
+    BLECharacteristic* VOC;
 
   public:
     EnvironmentService();
 
-    string getName() override;
+    void referesh();
 };

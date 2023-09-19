@@ -1,26 +1,16 @@
 #include <Arduino.h>
 
 #include <hardware/Bluetooth.hpp>
-#include <hardware/PowerManager.hpp>
 
-#include <hardware/sensor/ICM20948.hpp>
-#include <hardware/sensor/MAX30105.hpp>
+#include <hardware/sensor/Touch.hpp>
 #include <hardware/sensor/BME688.hpp>
-#include <hardware/sensor/GNSS.hpp>
 
-#include <service/Console.hpp>
-
-#include <service/Battery.hpp>
 #include <service/Environment.hpp>
+
+EnvironmentService* environmentService;
 
 void setup()
 {
-    delay(5000);
-
-#ifdef DEBUG
-    Serial.println("[INFO] Disabling Unused Power Sources");
-#endif
-
     pinMode(I2C_POWER, OUTPUT);
     pinMode(NEOPIXEL_POWER, OUTPUT);
 
@@ -30,48 +20,18 @@ void setup()
     delay(5000);
 
     Bluetooth::init();
+    Touch::init();
 
-    delay(5000);
+    environmentService = new EnvironmentService();
+    environmentService->referesh();
 
-#ifdef DEBUG
-    Serial.println("[INFO] Starting Power Manager");
-#endif
+    Bluetooth::get()->advertising->start();
 
-    PowerManager::init();
-
-    delay(5000);
-
-#ifdef DEBUG
-    Serial.println("[INFO] Starting Bluetooth Services");
-#endif
-
-    Console* console = new Console();
-
-    console->addCommand("ECHO", [](string input) { return input; });
-
-    console->addCommand("PROFILE", [&](string profile) {
-        uint8_t index = stoi(profile);
-
-        if (index != PowerManager::get()->getProfile())
-        {
-            PowerManager::get()->setProfile(index);
-        }
-
-        return "✔️ Profile Set";
-    });
-
-    BatteryService* batteryService = new BatteryService();
-    batteryService->start();
-
-    EnvironmentService* environmentService = new EnvironmentService();
-    environmentService->start();
 }
 
 void loop()
 {
-#ifdef PROFILE
+    environmentService->referesh();
 
-#else
-    vTaskDelete(NULL);
-#endif
+    vTaskDelay(30000);
 }

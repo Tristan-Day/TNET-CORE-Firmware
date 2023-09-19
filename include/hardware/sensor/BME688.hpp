@@ -1,17 +1,23 @@
 #pragma once
 
+#include <BSEC2.hpp>
+
+#include <Arduino.h>
+#include <Persistence.hpp>
+
 #include <service/Service.hpp>
-#include <Adafruit_BME680.h>
 
 class BME688 : public Service
 {
   private:
-    static constexpr float TEMPERATURE_OFFSET = 5.83;
     static constexpr uint8_t ADDRESS = 0x76;
+    static constexpr float SEA_LEVEL_PRESSURE = 1013.25;
 
     static BME688* instance;
 
-    Adafruit_BME680* sensor;
+    BSEC2* sensor;
+
+    Preferences* preferences;
 
     BME688();
 
@@ -22,17 +28,21 @@ class BME688 : public Service
     string getName() override;
 
   public:
+    Persistent<float>* TMP;
+
+    Persistent<float>* PRE;
+
+    Persistent<float>* ALT;
+
+    Persistent<float>* HUM;
+
+    Persistent<float>* CO2;
+
+    Persistent<float>* VOC;
+
     static BME688* get();
 
-    BME688(BME688& other) = delete;
+    BME688(BME688* other) = delete;
 
     void operator=(const BME688&) = delete;
-
-    float getTemperature();
-
-    float getPressure();
-
-    float getHumidity();
-
-    float getAltitude();
 };

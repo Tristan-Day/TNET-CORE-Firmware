@@ -66,7 +66,7 @@ void Service::start()
         taskSemaphore = xSemaphoreCreateBinary();
         xSemaphoreGive(taskSemaphore);
 
-        xTaskCreate(task, getName().c_str(), getStackDepth(), this, tskIDLE_PRIORITY, &taskHandle);
+        xTaskCreate(task, getName().c_str(), getStackDepth(), this, 1, &taskHandle);
     }
 }
 

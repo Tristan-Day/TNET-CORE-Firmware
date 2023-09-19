@@ -15,22 +15,19 @@ uint8_t scale(uint8_t n, uint8_t a, uint8_t b, uint8_t c, uint8_t d)
     return c + proportion * (d - c);
 }
 
-Vibration::Vibration(uint32_t duration, uint8_t amplitude)
+Vibration::Vibration(uint8_t amplitude, uint32_t duration)
 {
-    this->duration = duration;
     this->amplitude = amplitude;
+    this->duration = duration;
 }
 
-VibrationEffect* VibrationEffect::CLICK = new VibrationEffect({{150, 100}});
+VibrationEffect* VibrationEffect::CLICK =
+     new VibrationEffect({{100, 250}});
 
-VibrationEffect* VibrationEffect::FALL =
-    new VibrationEffect({{150, 100}, {80, 85}, {30, 50}, {80, 30}, {150, 5}});
+VibrationEffect* VibrationEffect::DOUBLE_CLICK =
+    new VibrationEffect({{100, 250}, {0, 250}, {100, 250}});
 
-VibrationEffect* VibrationEffect::RISE =
-    new VibrationEffect({{150, 5}, {80, 30}, {30, 50}, {80, 85}, {150, 100}});
-
-VibrationEffect::VibrationEffect(list<Vibration> composition)
-    : composition(composition)
+VibrationEffect::VibrationEffect(list<Vibration> composition) : composition(composition)
 {
     this->composition = composition;
 }
@@ -44,12 +41,19 @@ Haptics::Haptics()
 
 void Haptics::vibrate(uint8_t amplitude, uint32_t millisecconds)
 {
-    if (amplitude = 0)
+    if (amplitude == 0)
     {
-        analogWrite(OUTPUT_PIN, amplitude);
+        analogWrite(OUTPUT_PIN, 0);
     }
     else
     {
+        // Reduce peak stating current
+        if (amplitude > 85)
+        {
+            analogWrite(OUTPUT_PIN, amplitude * 0.75);
+            delay(25);
+        }
+
         analogWrite(OUTPUT_PIN, scale(amplitude, 0, 100, 190, 255));
     }
 
@@ -75,7 +79,6 @@ void Haptics::play(VibrationEffect* effect)
     }
 
     analogWrite(OUTPUT_PIN, 0);
-
     releaseLock();
 }
 

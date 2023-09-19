@@ -4,7 +4,7 @@
 
 using namespace std;
 
-constexpr long DEFAULT_INTERVAL = 60000;
+constexpr long DEFAULT_INTERVAL = 30000;
 constexpr long DEFAULT_STACK_DEPTH = 3000;
 
 class Service

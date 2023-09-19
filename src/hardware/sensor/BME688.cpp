@@ -4,21 +4,45 @@ BME688* BME688::instance = nullptr;
 
 BME688::BME688()
 {
-    sensor = new Adafruit_BME680(&Wire);
-    sensor->begin(ADDRESS);
+    sensor = new BSEC2();
+    sensor->begin(ADDRESS, Wire);
 
-    sensor->setTemperatureOversampling(BME680_OS_4X);
+    bsec_virtual_sensor_t attributes[] = 
+    {
+        BSEC_OUTPUT_RAW_PRESSURE, 
+        BSEC_OUTPUT_CO2_EQUIVALENT,
+        BSEC_OUTPUT_BREATH_VOC_EQUIVALENT,
+        BSEC_OUTPUT_SENSOR_HEAT_COMPENSATED_HUMIDITY,
+        BSEC_OUTPUT_SENSOR_HEAT_COMPENSATED_TEMPERATURE
+    };
 
-    sensor->setHumidityOversampling(BME680_OS_4X);
-    sensor->setPressureOversampling(BME680_OS_4X);
+    sensor->updateSubscription(attributes, 5, BSEC_SAMPLE_RATE_LP);
 
-    sensor->setIIRFilterSize(BME68X_FILTER_SIZE_31);
-    sensor->setGasHeater(320, 150);
+    preferences = new Preferences();
+    preferences->begin("BME688");
+
+    TMP = new Persistent<float>(preferences, "TMP");
+    PRE = new Persistent<float>(preferences, "PRE");
+    HUM = new Persistent<float>(preferences, "HIM");
+    ALT = new Persistent<float>(preferences, "ALT");
+    CO2 = new Persistent<float>(preferences, "CO2");
+    VOC = new Persistent<float>(preferences, "VOC");
 }
 
 void BME688::execute()
 {
-    sensor->performReading();
+    sensor->run();
+
+    TMP->set(sensor->temperature);
+    
+    PRE->set(sensor->pressure);
+    HUM->set(sensor->humidity);
+
+    float atmospheric = sensor->pressure / 100.0F;
+    ALT->set(44330.0 * (1.0 - pow(atmospheric / SEA_LEVEL_PRESSURE, 0.1903)));
+
+    CO2->set(sensor->co2Equivalent);
+    VOC->set(sensor->breathVocEquivalent);
 }
 
 uint32_t BME688::getStackDepth()
@@ -39,26 +63,4 @@ BME688* BME688::get()
         instance->start();
     }
     return instance;
-}
-
-float BME688::getTemperature()
-{
-    return sensor->temperature - BME688::TEMPERATURE_OFFSET;
-}
-
-float BME688::getPressure()
-{
-    return sensor->pressure;
-}
-
-float BME688::getHumidity()
-{
-    return sensor->humidity;
-}
-
-float BME688::getAltitude()
-{
-    float atmospheric = sensor->pressure / 100.0F;
-
-    return 44330.0 * (1.0 - pow(atmospheric / SENSORS_PRESSURE_SEALEVELHPA, 0.1903));
 }
