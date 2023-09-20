@@ -6,8 +6,10 @@
 #include <hardware/sensor/BME688.hpp>
 
 #include <service/Environment.hpp>
+#include <service/Notification.hpp>
 
 EnvironmentService* environmentService;
+NotificationService* notificationService;
 
 void setup()
 {
@@ -24,6 +26,9 @@ void setup()
 
     environmentService = new EnvironmentService();
     environmentService->referesh();
+
+    notificationService = new NotificationService();
+    notificationService->start();
 
     Bluetooth::get()->advertising->start();
 

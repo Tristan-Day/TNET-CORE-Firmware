@@ -2,11 +2,6 @@
 
 EnvironmentService::EnvironmentService()
 {
-    if (BME688::get()->hasFailed())
-    {
-        return;
-    }
-
     service = Bluetooth::get()->server->createService(BLEUUID((uint16_t)0x181A));
 
     TMP = service->createCharacteristic(

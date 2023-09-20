@@ -9,7 +9,7 @@ Touch::Touch()
     interruptEvent = xEventGroupCreate();
     touchEvent = xEventGroupCreate();
 
-    xTaskCreate(eventTimer, "Touch Event Processor", 2000, this, 5, &processorTask);
+    setInterval(0);
     touchAttachInterrupt(INPUT_PIN, eventInterrupt, THRESHOLD);
 }
 
@@ -25,9 +25,9 @@ void Touch::eventInterrupt()
     xEventGroupSetBitsFromISR(self->interruptEvent, (1 << 0), &taskUnblocked);
 }
 
-void Touch::eventTimer(void* arg)
+void Touch::execute()
 {
-    Touch* self = (Touch*)arg;
+    Touch* self = Touch::get();
 
     while (true)
     {
@@ -72,11 +72,17 @@ void Touch::eventTimer(void* arg)
     }
 }
 
+std::string Touch::getName()
+{
+    return "Touch Sense Service";
+}
+
 void Touch::init()
 {
     if (instance == nullptr)
     {
         instance = new Touch();
+        instance->start();
     }
 }
 

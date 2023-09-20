@@ -26,18 +26,6 @@ uint32_t Service::getStackDepth()
     return DEFAULT_STACK_DEPTH;
 }
 
-void Service::setFailed(bool state)
-{
-    failed = state;
-
-#ifdef DEBUG
-    if (state)
-    {
-        string message = "[ERROR] Task '" + getName() + "' failed";
-        Serial.println(message.c_str());
-    }
-#endif
-}
 
 Service::Service()
 {
@@ -52,11 +40,6 @@ string Service::getName()
 void Service::setInterval(uint32_t interval)
 {
     this->interval = interval;
-}
-
-bool Service::hasFailed()
-{
-    return failed;
 }
 
 void Service::start()

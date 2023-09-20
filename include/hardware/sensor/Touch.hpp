@@ -1,5 +1,6 @@
 #pragma once
 
+#include <service/Service.hpp>
 #include <hardware/Haptics.hpp>
 
 struct TouchEvent
@@ -10,7 +11,7 @@ struct TouchEvent
     static constexpr uint8_t DOUBLE_PRESS = 0b00000010;
 };
 
-class Touch
+class Touch : public Service
 {
   private:
     static constexpr uint8_t INPUT_PIN = 5;
@@ -24,17 +25,17 @@ class Touch
     static Touch* instance;
 
     EventGroupHandle_t interruptEvent;
-    TaskHandle_t processorTask;
-
     uint32_t lastEvent;
 
     Touch();
 
     static void eventInterrupt();
 
-    static void eventTimer(void*);
-
     void handleEvent(TouchEvent* event);
+
+    void execute() override;
+
+    std::string getName() override;
 
   public:
     EventGroupHandle_t touchEvent;
