@@ -5,9 +5,9 @@
 #include <Arduino.h>
 #include <Persistence.hpp>
 
-#include <service/Service.hpp>
+#include <service/Microservice.hpp>
 
-class BME688 : public Service
+class BME688
 {
   private:
     static constexpr uint8_t ADDRESS = 0x76;
@@ -16,12 +16,11 @@ class BME688 : public Service
     static BME688* instance;
 
     BSEC2* sensor;
-
+    
     Preferences* preferences;
+    Microservice* processor;
 
     BME688();
-
-    void execute() override;
 
   public:
     Persistent<float>* TMP;

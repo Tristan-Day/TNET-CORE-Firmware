@@ -11,7 +11,46 @@ Touch::Touch()
 
     touchAttachInterrupt(INPUT_PIN, interrupt, THRESHOLD);
 
-    this->create("Touch Service", 2000, 10, 15);
+    auto lambda = [&]()
+    {
+        xEventGroupWaitBits(interruptEvent, (1 << 0), true, false, portMAX_DELAY);
+
+        uint32_t startpoint = millis();
+        while (touchInterruptGetLastStatus(INPUT_PIN))
+        {
+            delay(5);
+        }
+        uint32_t duration = millis() - startpoint;
+        
+        EventBits_t event = 0;
+
+        if (duration > LONG_PRESS)
+        {
+            event = TouchEvent::LONG_PRESS;
+            Haptics::get()->play(VibrationEffect::CLICK);
+        }
+        else if (duration > SHORT_PRESS && duration < LONG_PRESS)
+        {
+            uint32_t interval = millis() - lastEvent;
+
+            if (interval < 2000)
+            {
+                event = TouchEvent::DOUBLE_PRESS;
+                Haptics::get()->play(VibrationEffect::DOUBLE_CLICK);
+            }
+
+            lastEvent = millis();
+        }
+
+        if (event != _NULL)
+        {
+            xEventGroupSetBits(touchEvent, event);
+            xEventGroupClearBits(touchEvent, event);
+        }
+    };
+
+    eventProcessor = new Microservice(lambda, 15);
+    eventProcessor->start("TEP", 2000, 10);
 }
 
 void Touch::interrupt()
@@ -24,53 +63,6 @@ void Touch::interrupt()
 
     static BaseType_t taskUnblocked;
     xEventGroupSetBitsFromISR(self->interruptEvent, (1 << 0), &taskUnblocked);
-}
-
-void Touch::execute()
-{
-    Touch* self = Touch::get();
-
-    xEventGroupWaitBits(self->interruptEvent, (1 << 0), true, false, UINT32_MAX);
-
-    // Measure the event
-    uint32_t startpoint = millis();
-
-    while (touchInterruptGetLastStatus(INPUT_PIN))
-    {
-        delay(5);
-    }
-
-    uint32_t duration = millis() - startpoint;
-
-    // Process the event
-    EventBits_t touchEvent = _NULL;
-
-    if (duration > LONG_PRESS)
-    {
-        touchEvent = TouchEvent::LONG_PRESS;
-        Haptics::get()->play(VibrationEffect::CLICK);
-    }
-
-    else if (duration > SHORT_PRESS && duration < LONG_PRESS)
-    {
-        uint32_t interval = millis() - self->lastEvent;
-
-        if (interval < MAX_INTERVAL)
-        {
-            touchEvent = TouchEvent::DOUBLE_PRESS;
-            Haptics::get()->play(VibrationEffect::DOUBLE_CLICK);
-        }
-
-        self->lastEvent = millis();
-    }
-
-    if (touchEvent != _NULL)
-    {
-        xEventGroupSetBits(self->touchEvent, touchEvent);
-        xEventGroupClearBits(self->touchEvent, touchEvent);
-
-        delay(5000);
-    }
 }
 
 void Touch::init()

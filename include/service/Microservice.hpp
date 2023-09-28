@@ -7,13 +7,14 @@ using namespace std;
 static constexpr long DEFAULT_INTERVAL = 30000;
 static constexpr long DEFAULT_STACK_DEPTH = 3000;
 
-class Service
+class Microservice
 {
   private:
     TaskHandle_t taskHandle;
     SemaphoreHandle_t taskSemaphore;
 
-    uint16_t interval;
+    function<void()> operation;
+    uint32_t interval;
 
     static void task(void* parameters);
 
@@ -21,13 +22,12 @@ class Service
     virtual void execute();
 
   public:
-    Service() {};
 
-    void create(const char* name, uint32_t stack, uint8_t priority);
+    Microservice(function<void()> operation, uint32_t interval);
 
-    void create(const char* name, uint32_t stack, uint8_t priority, uint32_t interval);
-
-    void start();
+    void start(const char* name, uint32_t stack, uint8_t priority);
 
     void suspend();
+
+    void resume();
 };

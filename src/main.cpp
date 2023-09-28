@@ -9,12 +9,8 @@
 #include <service/Environment.hpp>
 #include <service/Notification.hpp>
 
-#include <Test.hpp>
-
 EnvironmentService* environmentService;
 NotificationService* notificationService;
-
-Test* testService;
 
 void setup()
 {

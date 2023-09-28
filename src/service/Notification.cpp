@@ -9,18 +9,19 @@ NotificationService::NotificationService()
 
     service->start();
 
-    this->create("Notification Service", 3000, 5, 15);
-}
+    auto lambda = [&]()
+    {
+        EventBits_t events = TouchEvent::LONG_PRESS | TouchEvent::DOUBLE_PRESS;
+        EventBits_t event = xEventGroupWaitBits(Touch::get()->touchEvent, events, false, false, portMAX_DELAY);
 
-void NotificationService::execute()
-{
-    EventBits_t events = TouchEvent::LONG_PRESS | TouchEvent::DOUBLE_PRESS;
-    EventBits_t event = xEventGroupWaitBits(Touch::get()->touchEvent, events, false, false, portMAX_DELAY);
+    #ifdef DEBUG
+        Serial.println("[INFO] Writing to Notification Characteristic");
+    #endif
 
-#ifdef DEBUG
-    Serial.println("[INFO] Writing to Notification Characteristic");
-#endif
+        OUT->setValue(event);
+        OUT->notify();
+    };
 
-    OUT->setValue(event);
-    OUT->notify();
+    eventProcessor = new Microservice(lambda, 15);
+    eventProcessor->start("HID", 3000, 5);
 }

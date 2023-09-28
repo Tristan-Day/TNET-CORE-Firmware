@@ -1,6 +1,6 @@
 #pragma once
 
-#include <service/Service.hpp>
+#include <service/Microservice.hpp>
 #include <hardware/Haptics.hpp>
 
 struct TouchEvent
@@ -9,13 +9,11 @@ struct TouchEvent
     static constexpr uint8_t DOUBLE_PRESS = 0b00000010;
 };
 
-class Touch : public Service
+class Touch
 {
   private:
     static constexpr uint8_t INPUT_PIN = 5;
     static constexpr uint16_t THRESHOLD = 1500;
-
-    static constexpr uint16_t MAX_INTERVAL = 3000;
 
     static constexpr uint16_t LONG_PRESS = 2000;
     static constexpr uint8_t SHORT_PRESS = 15;
@@ -23,13 +21,13 @@ class Touch : public Service
     static Touch* instance;
 
     EventGroupHandle_t interruptEvent;
+    Microservice* eventProcessor;
+
     uint32_t lastEvent;
 
     Touch();
 
     static void interrupt();
-
-    void execute() override;
 
   public:
     EventGroupHandle_t touchEvent;
