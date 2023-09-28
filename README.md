@@ -4,7 +4,9 @@ HCI CORE, is a custom hardware project built from the ESP32 MCU. Designed to exp
 
 ## Bluetooth Low Energy
 
-BLE Services follow SIG-assigned numbers, maximising compatibility with other applications, including Strava.
+ESP32 Bluetooth LE functionality is implmented using the NimBLE library by h2zero. This provides many advantages over the inbuilt Bluedroid stack. 
+
+All BLE services utilise standardised UUID's where possible, ensuring compatibility with other applications.
 
 ## Design Overview
 

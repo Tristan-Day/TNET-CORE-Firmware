@@ -6,11 +6,13 @@
 #include <hardware/sensor/Touch.hpp>
 #include <hardware/sensor/BME688.hpp>
 
+#include <service/Battery.hpp>
 #include <service/Environment.hpp>
 #include <service/Notification.hpp>
 
-EnvironmentService* environmentService;
-NotificationService* notificationService;
+BatteryService*       BAT;
+EnvironmentService*   ENV;
+NotificationService*  NOT;
 
 void setup()
 {
@@ -34,15 +36,17 @@ void setup()
     Bluetooth::init();
     Touch::init();
 
-    environmentService = new EnvironmentService();
-    notificationService = new NotificationService();
+    BAT = new BatteryService();
+    ENV = new EnvironmentService();
+    NOT = new NotificationService();
 
     Bluetooth::get()->advertising->start();
 }
 
 void loop()
 {
-    environmentService->referesh();
+    BAT->refresh();
+    ENV->referesh();
 
-    vTaskDelay(30000);
+    vTaskDelay(DEFAULT_INTERVAL);
 }
