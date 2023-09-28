@@ -7,14 +7,11 @@ BME688::BME688()
     sensor = new BSEC2();
     sensor->begin(ADDRESS, Wire);
 
-    bsec_virtual_sensor_t attributes[] = 
-    {
-        BSEC_OUTPUT_RAW_PRESSURE, 
-        BSEC_OUTPUT_CO2_EQUIVALENT,
+    bsec_virtual_sensor_t attributes[] = {
+        BSEC_OUTPUT_RAW_PRESSURE, BSEC_OUTPUT_CO2_EQUIVALENT,
         BSEC_OUTPUT_BREATH_VOC_EQUIVALENT,
         BSEC_OUTPUT_SENSOR_HEAT_COMPENSATED_HUMIDITY,
-        BSEC_OUTPUT_SENSOR_HEAT_COMPENSATED_TEMPERATURE
-    };
+        BSEC_OUTPUT_SENSOR_HEAT_COMPENSATED_TEMPERATURE};
 
     sensor->updateSubscription(attributes, 5, BSEC_SAMPLE_RATE_LP);
 
@@ -27,6 +24,8 @@ BME688::BME688()
     ALT = new Persistent<float>(preferences, "ALT");
     CO2 = new Persistent<float>(preferences, "CO2");
     VOC = new Persistent<float>(preferences, "VOC");
+
+    this->create("BME688 Service", 3000, 1);
 }
 
 void BME688::execute()
@@ -34,7 +33,7 @@ void BME688::execute()
     sensor->run();
 
     TMP->set(sensor->temperature);
-    
+
     PRE->set(sensor->pressure);
     HUM->set(sensor->humidity);
 
@@ -45,22 +44,11 @@ void BME688::execute()
     VOC->set(sensor->breathVocEquivalent);
 }
 
-uint32_t BME688::getStackDepth()
-{
-    return 2500;
-}
-
-string BME688::getName()
-{
-    return "BME688 Service";
-}
-
 BME688* BME688::get()
 {
     if (instance == nullptr)
     {
         instance = new BME688();
-        instance->start();
     }
     return instance;
 }

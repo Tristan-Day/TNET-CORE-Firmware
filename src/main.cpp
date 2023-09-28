@@ -1,37 +1,47 @@
 #include <Arduino.h>
 
-#include <hardware/Bluetooth.hpp>
+#include <Extras.hpp>
 
+#include <hardware/Bluetooth.hpp>
 #include <hardware/sensor/Touch.hpp>
 #include <hardware/sensor/BME688.hpp>
 
 #include <service/Environment.hpp>
 #include <service/Notification.hpp>
 
+#include <Test.hpp>
+
 EnvironmentService* environmentService;
 NotificationService* notificationService;
 
+Test* testService;
+
 void setup()
 {
-    pinMode(I2C_POWER, OUTPUT);
-    pinMode(NEOPIXEL_POWER, OUTPUT);
+    delay(5000);
 
+    pinMode(I2C_POWER, OUTPUT);
     digitalWrite(I2C_POWER, LOW);
+
+    pinMode(NEOPIXEL_POWER, OUTPUT);
     digitalWrite(NEOPIXEL_POWER, LOW);
 
-    delay(5000);
+#ifdef DEBUG
+
+    Serial.printf("[INFO] Core0 LRR: '%s'\n",
+                  getResetReason(esp_rom_get_reset_reason(0)));
+
+    Serial.printf("[INFO] Core1 LRR: '%s'\n",
+                  getResetReason(esp_rom_get_reset_reason(1)));
+#endif
 
     Bluetooth::init();
     Touch::init();
 
     environmentService = new EnvironmentService();
-    environmentService->referesh();
-
     notificationService = new NotificationService();
-    notificationService->start();
 
     Bluetooth::get()->advertising->start();
-
 }
 
 void loop()

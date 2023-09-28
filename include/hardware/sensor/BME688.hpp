@@ -23,10 +23,6 @@ class BME688 : public Service
 
     void execute() override;
 
-    uint32_t getStackDepth() override;
-
-    string getName() override;
-
   public:
     Persistent<float>* TMP;
 

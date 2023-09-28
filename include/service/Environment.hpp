@@ -6,7 +6,7 @@
 class EnvironmentService
 {
   private:
-    BLEService* service = nullptr;
+    BLEService* service;
 
     // @brief Temperature in Degrees Celsius
     BLECharacteristic* TMP;

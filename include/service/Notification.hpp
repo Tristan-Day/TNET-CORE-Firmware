@@ -13,14 +13,12 @@ class NotificationService : public Service
     static constexpr const char* SERVER_NOTIFIY_UUID =
         "88c7bb0c-eed8-4964-9034-cf8f70e82158";
 
-    BLEService* service = nullptr;
+    BLEService* service;
 
     // @brief Output Characteristic - Server to Client
     BLECharacteristic* OUT;
 
     void execute() override;
-
-    std::string getName() override;
 
   public:
     NotificationService();
