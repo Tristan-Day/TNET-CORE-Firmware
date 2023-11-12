@@ -25,3 +25,11 @@ NotificationService::NotificationService()
     eventProcessor = new Microservice(lambda, 15);
     eventProcessor->start("HID", 3000, 5);
 }
+
+NotificationService::~NotificationService()
+{
+    delete eventProcessor;
+
+    service->removeCharacteristic(OUT, true);
+    Bluetooth::get()->server->removeService(service, true);
+}

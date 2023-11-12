@@ -25,7 +25,19 @@ EnvironmentService::EnvironmentService()
     service->start();
 }
 
-void EnvironmentService::referesh()
+EnvironmentService::~EnvironmentService()
+{
+    service->removeCharacteristic(TMP, true);
+    service->removeCharacteristic(PRE, true);
+    service->removeCharacteristic(HUM, true);
+    service->removeCharacteristic(ALT, true);
+    service->removeCharacteristic(CO2, true);
+    service->removeCharacteristic(VOC, true);
+
+    Bluetooth::get()->server->removeService(service, true);
+}
+
+void EnvironmentService::refresh()
 {
     BME688* sensor = BME688::get();
 

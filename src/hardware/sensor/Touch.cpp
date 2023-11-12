@@ -9,8 +9,6 @@ Touch::Touch()
     interruptEvent = xEventGroupCreate();
     touchEvent = xEventGroupCreate();
 
-    touchAttachInterrupt(INPUT_PIN, interrupt, THRESHOLD);
-
     auto lambda = [&]()
     {
         xEventGroupWaitBits(interruptEvent, (1 << 0), true, false, portMAX_DELAY);
@@ -65,19 +63,21 @@ void Touch::interrupt()
     xEventGroupSetBitsFromISR(self->interruptEvent, (1 << 0), &taskUnblocked);
 }
 
-void Touch::init()
+Touch* Touch::get()
 {
     if (instance == nullptr)
     {
         instance = new Touch();
     }
+    return instance;
 }
 
-Touch* Touch::get()
+void Touch::enable()
 {
-    if (instance == nullptr)
-    {
-        init();
-    }
-    return instance;
+    touchAttachInterrupt(INPUT_PIN, interrupt, THRESHOLD);
+}
+
+void Touch::disable()
+{
+    touchDetachInterrupt(INPUT_PIN);
 }

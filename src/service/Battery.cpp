@@ -13,6 +13,14 @@ BatteryService::BatteryService()
     service->start();
 }
 
+BatteryService::~BatteryService()
+{
+    service->removeCharacteristic(CHG, true);
+    service->removeCharacteristic(VLT, true);
+
+    Bluetooth::get()->server->removeService(service, true);
+}
+
 void BatteryService::refresh()
 {
     uint8_t charge = MAX17048::get()->CHG->get();

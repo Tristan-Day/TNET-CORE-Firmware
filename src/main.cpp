@@ -1,18 +1,17 @@
 #include <Arduino.h>
 
-#include <Extras.hpp>
+// #include <script/Startup.hpp>
 
-#include <hardware/Bluetooth.hpp>
 #include <hardware/sensor/Touch.hpp>
 #include <hardware/sensor/BME688.hpp>
 
 #include <service/Battery.hpp>
 #include <service/Environment.hpp>
-#include <service/Notification.hpp>
+// #include <service/Notification.hpp>
 
-BatteryService*       BAT;
-EnvironmentService*   ENV;
-NotificationService*  NOT;
+BatteryService* BAT;
+EnvironmentService* ENV;
+// NotificationService*  HID;
 
 void setup()
 {
@@ -24,29 +23,31 @@ void setup()
     pinMode(NEOPIXEL_POWER, OUTPUT);
     digitalWrite(NEOPIXEL_POWER, LOW);
 
-#ifdef DEBUG
-
-    Serial.printf("[INFO] Core0 LRR: '%s'\n",
-                  getResetReason(esp_rom_get_reset_reason(0)));
-
-    Serial.printf("[INFO] Core1 LRR: '%s'\n",
-                  getResetReason(esp_rom_get_reset_reason(1)));
-#endif
-
-    Bluetooth::init();
-    Touch::init();
-
-    BAT = new BatteryService();
-    ENV = new EnvironmentService();
-    NOT = new NotificationService();
-
-    Bluetooth::get()->advertising->start();
+    Touch::get()->enable();
 }
 
 void loop()
 {
-    BAT->refresh();
-    ENV->referesh();
+    Bluetooth::get()->enable();
 
-    vTaskDelay(DEFAULT_INTERVAL);
+    ENV = new EnvironmentService();
+    BAT = new BatteryService();
+
+    Bluetooth::get()->advertising->start();
+
+    ENV->refresh();
+    BAT->refresh();
+
+    vTaskDelay(pdMS_TO_TICKS(30000));
+
+    delete ENV;
+    delete BAT;
+
+    Bluetooth::get()->disable();
+
+    vTaskDelay(pdMS_TO_TICKS(60000));
+
+#ifdef DEBUG
+    Serial.println(esp_get_free_internal_heap_size());
+#endif
 }

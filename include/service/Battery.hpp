@@ -3,13 +3,11 @@
 #include <hardware/Bluetooth.hpp>
 #include <hardware/sensor/MAX17048.hpp>
 
-class BatteryService
+class BatteryService : public BluetoothService
 {
   private:
     static constexpr const char* BATTERY_VOLTAGE_UUID =
         "2cd85adb-31d1-4fb9-b437-6288b780ca43";
-
-    BLEService* service;
 
     // @brief Battery Charge Percentage
     BLECharacteristic* CHG;
@@ -20,5 +18,7 @@ class BatteryService
   public:
     BatteryService();
 
-    void refresh();
+    ~BatteryService();
+
+    void refresh() override;
 };

@@ -5,68 +5,76 @@ Bluetooth* Bluetooth::instance = nullptr;
 Bluetooth::Bluetooth()
 {
     connectionEvent = xEventGroupCreate();
-
-    BLEDevice::init(DEVICE_NAME);
-    BLEDevice::setPower((esp_power_level_t)TRANSMISSION_POWER);
-
-    server = BLEDevice::createServer();
-    server->setCallbacks(this);
-    
-    advertising = BLEDevice::getAdvertising();
-    advertising->setScanResponse(false);
-
-#ifdef DEBUG
-    Serial.println("[INFO] Bluetooth Device Initialised");
-#endif
 }
 
-void Bluetooth::onConnect(BLEServer* pServer)
+void Bluetooth::Callbacks::onConnect(BLEServer* pServer)
 {
-    advertising->stop();
+    Bluetooth* self = Bluetooth::get();
+
+    self->advertising->stop();
 
     // Clear Disconnect Flag
     static const EventBits_t xBitsToClear = (1 << 1);
-    xEventGroupClearBits(connectionEvent, xBitsToClear);
+    xEventGroupClearBits(self->connectionEvent, xBitsToClear);
 
     // Set Connected Flag
     static const EventBits_t xBitsToSet = (1 << 0);
-    xEventGroupSetBits(connectionEvent, xBitsToSet);
+    xEventGroupSetBits(self->connectionEvent, xBitsToSet);
 
 #ifdef DEBUG
     Serial.println("[INFO] BLE Client Connected");
 #endif
 }
 
-void Bluetooth::onDisconnect(BLEServer* pServer)
+void Bluetooth::Callbacks::onDisconnect(BLEServer* pServer)
 {
+    Bluetooth* self = Bluetooth::get();
+
     // Clear Connected Flag
     static const EventBits_t xBitsToClear = (1 << 0);
-    xEventGroupClearBits(connectionEvent, xBitsToClear);
+    xEventGroupClearBits(self->connectionEvent, xBitsToClear);
 
     // Set Disconnect Flag
     static const EventBits_t xBitsToSet = (1 << 1);
-    xEventGroupSetBits(connectionEvent, xBitsToSet);
+    xEventGroupSetBits(self->connectionEvent, xBitsToSet);
 
-    advertising->start();
+    self->advertising->start();
 
 #ifdef DEBUG
     Serial.println("[INFO] BLE Client Disconnected");
 #endif
 }
 
-void Bluetooth::init()
+Bluetooth* Bluetooth::get()
 {
     if (instance == nullptr)
     {
         instance = new Bluetooth();
     }
+    return instance;
 }
 
-Bluetooth* Bluetooth::get()
+void Bluetooth::enable()
 {
-    if (instance == nullptr)
-    {
-        init();
-    }
-    return instance;
+    BLEDevice::init(DEVICE_NAME);
+    BLEDevice::setPower((esp_power_level_t)TRANSMISSION_POWER);
+
+    server = BLEDevice::createServer();
+    server->setCallbacks(new Callbacks());
+
+    advertising = BLEDevice::getAdvertising();
+    advertising->setScanResponse(false);
+
+#ifdef DEBUG
+    Serial.println("[INFO] Bluetooth Enabled");
+#endif
+}
+
+void Bluetooth::disable()
+{
+    BLEDevice::deinit(true);
+
+#ifdef DEBUG
+    Serial.println("[INFO] Bluetooth Disabled");
+#endif
 }

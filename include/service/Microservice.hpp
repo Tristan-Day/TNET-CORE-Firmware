@@ -25,6 +25,8 @@ class Microservice
 
     Microservice(function<void()> operation, uint32_t interval);
 
+    ~Microservice();
+
     void start(const char* name, uint32_t stack, uint8_t priority);
 
     void suspend();

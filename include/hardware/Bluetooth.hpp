@@ -5,31 +5,45 @@
 #include <NimBLEDevice.h>
 #include <NimBLEServer.h>
 
-class Bluetooth : public NimBLEServerCallbacks
+constexpr uint8_t TRANSMISSION_POWER = ESP_PWR_LVL_N0;
+constexpr const char* DEVICE_NAME = "TNET - CORE (Series 2)";
+
+class Bluetooth
 {
   private:
-    static constexpr int8_t TRANSMISSION_POWER = ESP_PWR_LVL_P6;
-    static constexpr const char* DEVICE_NAME = "TNET - CORE (Series 2)";
-
     static Bluetooth* instance;
 
     Bluetooth();
 
-    void onConnect(BLEServer* server);
+    class Callbacks : public BLEServerCallbacks
+    {
+        void onConnect(BLEServer* server) override;
 
-    void onDisconnect(BLEServer* server);
+        void onDisconnect(BLEServer* server) override;
+    };
 
   public:
     EventGroupHandle_t connectionEvent;
 
-    NimBLEServer* server;
-    NimBLEAdvertising* advertising;
-
-    static void init();
+    BLEServer* server;
+    BLEAdvertising* advertising;
 
     static Bluetooth* get();
 
     Bluetooth(Bluetooth& other) = delete;
 
     void operator=(const Bluetooth&) = delete;
+
+    void enable();
+
+    void disable();
+};
+
+class BluetoothService
+{
+  protected:
+    BLEService* service;
+
+  public:
+    virtual void refresh();
 };

@@ -26,6 +26,12 @@ Microservice::Microservice(function<void()> operation, uint32_t interval)
     this->interval = interval;
 }
 
+Microservice::~Microservice()
+{
+    vTaskDelete(taskHandle);
+    vSemaphoreDelete(taskSemaphore);
+}
+
 void Microservice::start(const char* name, uint32_t stack, uint8_t priority)
 {
     taskSemaphore = xSemaphoreCreateBinary();

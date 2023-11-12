@@ -32,11 +32,13 @@ class Touch
   public:
     EventGroupHandle_t touchEvent;
 
-    static void init();
-
     static Touch* get();
 
     Touch(Touch& other) = delete;
 
     void operator=(const Touch&) = delete;
+
+    void enable();
+
+    void disable();
 };

@@ -3,11 +3,9 @@
 #include <hardware/Bluetooth.hpp>
 #include <hardware/sensor/BME688.hpp>
 
-class EnvironmentService
+class EnvironmentService : public BluetoothService
 {
   private:
-    BLEService* service;
-
     // @brief Temperature in Degrees Celsius
     BLECharacteristic* TMP;
 
@@ -29,5 +27,7 @@ class EnvironmentService
   public:
     EnvironmentService();
 
-    void referesh();
+    ~EnvironmentService();
+
+    void refresh() override;
 };

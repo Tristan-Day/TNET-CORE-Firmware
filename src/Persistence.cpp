@@ -9,36 +9,36 @@ Persistent<T>::Persistent(Preferences* collection, const char* key)
 
 template class Persistent<long>;
 
-template <> void Persistent<long>::set(long value)
-{
-    collection->putLong(key, value);
-}
-
 template <> long Persistent<long>::get()
 {
     return collection->getLong(key, 0);
 }
 
-template class Persistent<float>;
-
-template <> void Persistent<float>::set(float value)
+template <> void Persistent<long>::set(long value)
 {
-    collection->putFloat(key, value);
+    collection->putLong(key, value);
 }
+
+template class Persistent<float>;
 
 template <> float Persistent<float>::get()
 {
     return collection->getFloat(key, 0);
 }
 
-template class Persistent<bool>;
-
-template <> void Persistent<bool>::set(bool value)
+template <> void Persistent<float>::set(float value)
 {
-    collection->putBool(key, value);
+    collection->putFloat(key, value);
 }
+
+template class Persistent<bool>;
 
 template <> bool Persistent<bool>::get()
 {
     return collection->getBool(key, false);
+}
+
+template <> void Persistent<bool>::set(bool value)
+{
+    collection->putBool(key, value);
 }

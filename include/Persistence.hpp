@@ -15,7 +15,7 @@ template <typename Type> class Persistent
   public:
     Persistent(Preferences* collection, const char* key);
 
-    virtual void set(Type value);
-
     virtual Type get();
+
+    virtual void set(Type value);
 };
